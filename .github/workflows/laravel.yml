@@ -69,7 +69,7 @@ jobs:
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
-            .git/
+            .git/ 
             .github/
             .idea/
             node_modules/
