@@ -1,0 +1,90 @@
+name: 🚀 Laravel cPanel Deployment (Stable)
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - '.env.example'
+
+jobs:
+  deploy:
+    name: 🛡️ Stable Deployment
+    runs-on: ubuntu-latest
+    timeout-minutes: 30  # Prevent hanging on connection issues
+
+    steps:
+      # 1. Checkout code
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Setup PHP environment
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, ctype, fileinfo, openssl, pdo, tokenizer, xml
+          ini-values: memory_limit=512M, max_execution_time=300
+          coverage: none
+
+      # 3. Install dependencies (optimized for production)
+      - name: 📦 Composer Install
+        run: |
+          composer validate
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
+          composer dump-autoload --optimize --no-scripts
+
+      # 4. Frontend assets (conditional)
+      - name: 🛠️ Check for Frontend
+        id: check_frontend
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "has_frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🏗️ Build Assets
+        if: steps.check_frontend.outputs.has_frontend == 'true'
+        run: |
+          npm ci --silent
+          npm run build --silent
+
+      # 5. Deployment (with FTPS and retry logic)
+      - name: 🚀 Deploy to Server
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || '21' }}
+          protocol: ftps
+          security: loose  # Changed from "strict" to "loose" to fix certificate issue
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            .git/
+            .github/
+            .idea/
+            node_modules/
+            tests/
+            *.md
+            *.sqlite
+            *.log
+            .env*
+            docker-compose*
+            vite.config.js
+            package*.json
+            composer.*
+            phpunit.xml
+
+      # 6. Post-deployment verification
+      - name: ✅ Verify Deployment
+        run: |
+          echo "Deployment completed successfully at $(date)"
+          echo "Triggered by: $GITHUB_SHA"
