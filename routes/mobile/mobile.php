@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\mobile\AuthController;
+use App\Http\Controllers\mobile\HomeController;
 
 //<!--Route::middleware('auth:admin')->group(function () {-->
 //<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
@@ -25,5 +26,8 @@ Route::group(['prefix' => 'mobile'], function () {
         Route::post('/send-otp', 'sendOtp');
         Route::post('/verify-otp', 'verifyOtp');
 //        Route::post('/fcm', 'fcm');
+    });
+    Route::controller(HomeController::class)->group(function () {
+        Route::get('/onbording', 'onbording');
     });
 });

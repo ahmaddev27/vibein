@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\dashboard\AdminAuthController;
+use App\Http\Controllers\dashboard\ProductController;
+use App\Http\Controllers\dashboard\CategoryController;
 
 //<!--Route::middleware('auth:admin')->group(function () {-->
 //<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
@@ -13,31 +14,28 @@ use App\Http\Controllers\dashboard\AdminAuthController;
 
 Route::prefix('admin')->group(function () {
 
-    Route::get('/menu', function () {
-        $menuItems = \App\Models\AppMenu::with('children')->where('appGroupId', 12)
-            ->where('appId', 3)
-            ->whereNull('parentId')
-            ->orderBy('order', 'asc')
-            ->get();
-        return response()->json([
-            'data' => $menuItems,
-            'status' => true,
-            'code' => 200,
-            'message' => 'Success',
-        ]);
-    })->middleware('auth:admin-api');
 
-    Route::controller(AdminAuthController::class)->group(function () {
-        Route::post('login', 'login');
-        Route::middleware('auth:admin-api')->group(function () {
-            Route::post('/logout', 'logout');
-            Route::get('/profile', 'profile');
-        });
+//    Route::controller(AdminAuthController::class)->group(function () {
+//        Route::post('login', 'login');
+//        Route::middleware('auth:admin-api')->group(function () {
+//            Route::post('/logout', 'logout');
+//            Route::get('/profile', 'profile');
+//        });
+//    });
+
+
+    Route::controller(ProductController::class)->group(function () {
+        Route::get('/products', 'index');
+    });
+
+    Route::controller(CategoryController::class)->group(function () {
+        Route::get('/categories', 'index');
     });
 
 
 
 });
+
 
 
 

@@ -12,3 +12,14 @@ function categories()
         '8' => 'Accessories',
     ];
 }
+
+
+function formatPagination($paginator)
+{
+    return [
+        'current_page' => $paginator->currentPage(),
+        'last_page' => $paginator->lastPage(),
+        'per_page' => $paginator->perPage(),
+        'total' => $paginator->total(),
+    ];
+}

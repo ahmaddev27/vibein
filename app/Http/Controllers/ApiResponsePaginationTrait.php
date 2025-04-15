@@ -11,12 +11,10 @@ trait ApiResponsePaginationTrait{
             'status'=>$status,
             'code'=>$code,
             'message'=>$message,
-
             'data'=>$data,
            'pagination'=>formatPagination($data)
 
         ];
-
 
         return response()->json($array, $code);
 
