@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\dashboard\ProductController;
 use App\Http\Controllers\dashboard\CategoryController;
+use App\Http\Controllers\dashboard\MenuController;
+use App\Http\Controllers\dashboard\BrandController;
 
 //<!--Route::middleware('auth:admin')->group(function () {-->
 //<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
@@ -23,15 +25,29 @@ Route::prefix('admin')->group(function () {
 //        });
 //    });
 
+    // Menu Routes
+//    Route::controller(MenuController::class)->group(function () {
+//        Route::get('/crmMenu', 'crmMenu')->name('menu.crm');
+//    });
 
-    Route::controller(ProductController::class)->group(function () {
-        Route::get('/products', 'index');
+// Product Routes
+    Route::prefix('products')->controller(ProductController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
     });
 
-    Route::controller(CategoryController::class)->group(function () {
-        Route::get('/categories', 'index');
+// Category Routes
+    Route::prefix('categories')->controller(CategoryController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::get('/sub', 'SubCategoriesIndex')->name('sub');
+        Route::post('/store', 'store')->name('store');
     });
 
+// Brand Routes
+    Route::prefix('brands')->controller(BrandController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/store', 'store')->name('store');
+    });
 
 
 });

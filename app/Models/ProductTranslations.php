@@ -10,9 +10,26 @@ class ProductTranslations extends Model
 {
     use HasFactory;
     protected $table = 'productTranslation';
-//    public function category(){
-//        return $this->belongsTo(Category::class,'category_id','id');
-//    }
+
+    protected $fillable=[
+
+        'name',
+        'description',
+        'productId',
+        'languageCode',
+        'shortDescription',
+        'tags',
+        'metaTagTitle',
+        'metaTagDescription',
+        'customTab',
+        'createdAt',
+        'updatedAt',
+
+    ];
+
+    // Custom timestamp column names
+    const CREATED_AT = 'createdAt';
+    const UPDATED_AT = 'updatedAt';
 
 
     public function getNameAttribute()

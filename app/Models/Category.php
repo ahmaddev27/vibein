@@ -10,6 +10,18 @@ class Category extends Model
 {
     protected $table = 'category';
 
+    protected $fillable = [
+        'parentCategoryId',
+        'companyId',
+        'showStatus',
+        'sortOrder',
+        'image',
+        'updatedAt',
+        'createdAt'
+    ];
+    // Custom timestamp column names
+    const CREATED_AT = 'createdAt';
+    const UPDATED_AT = 'updatedAt';
     protected static function booted()
     {
         static::addGlobalScope('company', function (Builder $builder) {
@@ -25,6 +37,12 @@ class Category extends Model
     public function CategoryTranslations()
     {
         return $this->hasMany(CategoryTranslations::class, 'categoryId', 'id');
+    }
+
+
+    public function subCategories()
+    {
+        return $this->hasMany(Category::class, 'parentId', 'id');
     }
 
 

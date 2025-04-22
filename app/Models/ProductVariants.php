@@ -6,31 +6,71 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 
-class ProductVariants extends Model
+class
+ProductVariants extends Model
 {
     use HasFactory;
     protected $table = 'productVariant';
-//    public function category(){
-//        return $this->belongsTo(Category::class,'category_id','id');
-//    }
+
+
+    protected $fillable=[
+        'SKU',
+        'price',
+        'quantity',
+        'minimumQuantity',
+        'title',
+        'colorCode',
+        'productId',
+        'prices',
+        'images',
+        'createdAt',
+        'updatedAt',
+    ];
+
+
+    // Custom timestamp column names
+    const CREATED_AT = 'createdAt';
+    const UPDATED_AT = 'updatedAt';
     protected $casts = [
         'productSpecialPrice' => 'array',
+        'prices' => 'array',
         'productSpecialQuantityPrice' => 'array',
         'searchKeys' => 'array',
+        'images' => 'array',
     ];
-    public function getImagesAttribute()
+
+    public function getImagesAttribute($value)
     {
-        $images = $this->attributes['images'] ?? '';
+        // If the value is empty, return an empty array
+        if (empty($value)) {
+            return [];
+        }
 
-        // Remove curly braces if present
-        $images = trim($images, '{}');
+        // Handle both formats: raw DB string or already converted array
+        if (is_array($value)) {
+            $imagePaths = $value; // Already converted by cast
+        } else {
+            // Handle raw DB string format (e.g., "{path1,path2}")
+            $value = trim($value, '{}'); // Remove curly braces
+            $imagePaths = $value ? array_map('trim', explode(',', $value)) : [];
+        }
 
-        // Split by commas to get individual URLs
-        $imageArray = explode(',', $images);
+        // Base URL for images
+        $baseUrl = url('/storage'); // Assuming images are stored in the "public/storage" directory
 
-        // Trim spaces from each image URL
-        return array_map('trim', $imageArray);
+        // Check if each image path is already a URL, and prepend the base URL if not
+        $fullUrls = array_map(function ($path) use ($baseUrl) {
+            // Check if the path starts with "http://" or "https://"
+            if (filter_var($path, FILTER_VALIDATE_URL)) {
+                return $path; // Path is already a URL
+            }
+            // Prepend the base URL to the path
+            return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
+        }, $imagePaths);
+
+        return $fullUrls;
     }
+    
 
     public function getNameAttribute()
     {
@@ -74,6 +114,7 @@ class ProductVariants extends Model
             ];
         }, is_array($decoded) ? $decoded : []);
     }
+
 
 
 

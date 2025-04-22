@@ -1,0 +1,118 @@
+<?php
+
+namespace App\Http\Controllers\dashboard;
+
+use App\Http\Controllers\ApiResponseTrait;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreBrandRequest;
+use App\Models\Brand;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class BrandController extends Controller
+{
+    use ApiResponseTrait;
+
+    public function index(Request $request)
+    {
+        try {
+            // Start building the query
+            $query = Brand::with('brandTranslation');
+
+
+            if ($request->has('status')) {
+                $query->where('showStatus', $request->status);
+            }
+
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->whereHas('brandTranslation', function($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+            // Apply sorting
+            $sortField = $request->get('sort_by', 'createdAt');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $query->orderBy($sortField, $sortDirection);
+
+
+            // Paginate results
+            $perPage = $request->input('per_page', 10);
+            $brands = $query->paginate($perPage);
+            if ($brands->isEmpty()) {
+                return $this->ApiResponsePaginationTrait(
+                    $brands,
+                    'No Brands found',
+                    true,
+                    200
+                );
+            }
+
+            return $this->ApiResponsePaginationTrait(
+                $brands,
+                'Brands retrieved successfully',
+                true,
+                200
+            );
+
+
+        } catch (\Exception $e) {
+            return $this->apiResponse(
+                null,
+                'Failed to retrieve brands: ' . $e->getMessage(),
+                false,
+                500
+            );
+        }
+    }
+    public function store(StoreBrandRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $brandData = [
+                'companyId' => $request->companyId,
+                'showStatus' => $request->showStatus,
+                'sortOrder' => $request->sortOrder ?? 0,
+            ];
+
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('brands', 'public');
+                $brandData['image'] = $imagePath;
+            }
+
+            $brand = Brand::create($brandData);
+
+             $brand->brandTranslation()->create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'metaTagTitle' => $request->metaTagTitle,
+                'metaTagDescription' => $request->metaTagDescription,
+                'metaTagKeywords' => $request->metaTagKeywords,
+                'languageCode' => $request->languageCode,
+                'brandId' => $brand->id
+            ]);
+
+            DB::commit();
+
+            return $this->apiResponse(
+                $brand->load('brandTranslation'),
+                'Brand created successfully',
+                true,
+                201
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->apiResponse(
+                null,
+                'Failed to create brand: ' . $e->getMessage(),
+                false,
+                500
+            );
+        }
+    }
+    }

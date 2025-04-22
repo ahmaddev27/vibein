@@ -14,6 +14,19 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'product';
+    protected $fillable=[
+        'status',
+        'lable',
+        'companyId',
+        'brandId',
+        'taxId',
+        'updatedAt',
+        'createdAt'
+    ];
+
+    // Custom timestamp column names
+    const CREATED_AT = 'createdAt';
+    const UPDATED_AT = 'updatedAt';
 
     protected static function booted()
     {
@@ -24,7 +37,12 @@ class Product extends Model
 
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class,'productCategories','productId','categoryId');
+        return $this->belongsToMany(Category::class,'productCategories','productId','categoryId')->where('subCategory',false);;
+    }
+
+    public function Subcategories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class,'productCategories','productId','categoryId')->where('subCategory',true);
     }
 
     public function productVariants()
@@ -38,16 +56,15 @@ class Product extends Model
     }
 
 
-    public function productBrand()
+    public function Brand()
     {
-        return $this->belongsTo(ProductBrand::class, 'brandId', 'id');
+        return $this->belongsTo(Brand::class, 'brandId', 'id');
     }
 
     public function productTax()
     {
         return $this->belongsTo(Tax::class, 'taxId', 'id');
     }
-
 
 
 
@@ -115,6 +132,11 @@ class Product extends Model
         }
     }
 
+
+    public function tax()
+    {
+        return $this->hasOne(Tax::class, 'id', 'taxId');
+    }
 
 //    public function getLinksAttribute()
 //    {
