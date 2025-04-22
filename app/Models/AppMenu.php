@@ -9,12 +9,33 @@ class AppMenu extends Model
 {
 
     protected $table = 'appMenu';
+
+    #WEHN GET ALL MENUS FOR CRM
+
     protected static function booted()
     {
         static::addGlobalScope('appId', function (Builder $builder) {
             $builder->where('appId', 3)->where('appGroupId',12)->orderBy('order', 'asc')->where('deletedAt',null);
         });
     }
+
+    #WEHN GET ALL MENUS FOR VIBIN
+
+//    protected static function booted()
+//    {
+//        static::addGlobalScope('appId', function (Builder $builder) {
+//            $builder->where('appId', 3)->where('appGroupId',17)->orderBy('order', 'asc')->where('deletedAt',null);
+//        });
+//    }
+
+    #WEHN GET ALL MENUS FOR APP
+
+//    protected static function booted()
+//    {
+//        static::addGlobalScope('appId', function (Builder $builder) {
+//            $builder->where('appId', 3)->orderBy('order', 'asc')->where('deletedAt',null);
+//        });
+//    }
 
 
     public function children()

@@ -29,5 +29,6 @@ Route::group(['prefix' => 'mobile'], function () {
     });
     Route::controller(HomeController::class)->group(function () {
         Route::get('/onbording', 'onbording');
+        Route::get('/sliders', 'sliders');
     });
 });

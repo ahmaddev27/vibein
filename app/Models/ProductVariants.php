@@ -70,7 +70,7 @@ ProductVariants extends Model
 
         return $fullUrls;
     }
-    
+
 
     public function getNameAttribute()
     {

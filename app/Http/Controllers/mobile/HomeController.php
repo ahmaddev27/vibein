@@ -4,16 +4,28 @@ namespace App\Http\Controllers\mobile;
 
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\OnbordingResources;
-use App\Models\Onbording;
+use App\Http\Resources\OnboardingResources;
+use App\Http\Resources\SliderResources;
+use App\Models\Onboarding;
+use App\Models\Sliders;
+
 class HomeController extends Controller
 {
     use ApiResponseTrait;
 
-    public function onbording(){
+    public function onbording()
+    {
 
         return $this->apiRespose(
-            OnbordingResources::collection(Onbording::orderBy('id')->get()),'successfully', true, 200);
+            OnboardingResources::collection(Onboarding::orderBy('id')->get()), 'successfully', true, 200);
+    }
+
+
+    public function sliders()
+    {
+
+        return $this->apiRespose(
+            SliderResources::collection(Sliders::orderBy('id')->get()), 'successfully', true, 200);
     }
 
 }
