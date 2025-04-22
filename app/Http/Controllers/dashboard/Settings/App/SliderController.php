@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SliderResources;
 use App\Models\Sliders;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SliderController extends Controller
 {
@@ -81,11 +83,13 @@ class SliderController extends Controller
         $slider = Sliders::findOrFail($id);
 
         if ($slider->image) {
-            $oldImagePath = public_path('storage/' . $slider->image);
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
+            if ($slider->image && Storage::disk('public')->exists($slider->image)) {
+                Storage::disk('public')->delete($slider->image);
             }
         }
+
+
+
 
         $slider->delete();
 

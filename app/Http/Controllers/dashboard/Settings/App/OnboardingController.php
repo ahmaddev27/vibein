@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OnboardingResources;
 use App\Models\Onboarding;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class OnboardingController extends Controller
 {
@@ -90,11 +91,8 @@ class OnboardingController extends Controller
     {
         $onbording = Onboarding::findOrFail($id);
 
-        if ($onbording->image) {
-            $oldImagePath = public_path('storage/' . $onbording->image);
-            if (file_exists($oldImagePath)) {
-                unlink($oldImagePath);
-            }
+        if ($onbording->image && Storage::disk('public')->exists($onbording->image)) {
+            Storage::disk('public')->delete($onbording->image);
         }
 
         $onbording->delete();

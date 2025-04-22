@@ -12,8 +12,10 @@ class Sliders extends Model
     protected $table = 'appSlider';
 
 
-    public function getImageAttribute($value)
+    public function getImage()
     {
+        $value = $this->image;
+
         if (empty($value)) {
             return null;
         }

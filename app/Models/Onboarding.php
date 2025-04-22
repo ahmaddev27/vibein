@@ -16,8 +16,9 @@ class Onboarding extends Model
 
 
 
-    public function getImageAttribute($value)
+    public function getImage()
     {
+        $value = $this->image;
         if (empty($value)) {
             return null;
         }
