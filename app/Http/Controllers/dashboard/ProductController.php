@@ -85,8 +85,9 @@ class ProductController extends Controller
                 'metaTagTitle' => $request->metaTagTitle
             ]);
 
-            $variants= $product->ProductVariants()->create([
+            $variants = $product->ProductVariants()->create([
                 'productId' => $product->id,
+                'quantity' => $request->quantity,
                 'status' => 'Active', // Default status
                 'createdAt' => now(),
                 'updatedAt' => now()
@@ -99,19 +100,21 @@ class ProductController extends Controller
                     $path = $image->store('products', 'public');
                     $imagePaths[] = "'" . addslashes($path) . "'"; // Use single quotes for string literals
                 }
-            }
 
-// Construct the array literal
-            $arrayLiteral = "ARRAY[" . implode(',', $imagePaths) . "]";
-            Log::info("Generated array literal: " . $arrayLiteral); // Log the array literal
+                // Construct the array literal
+                $arrayLiteral = "ARRAY[" . implode(',', $imagePaths) . "]";
+                Log::info("Generated array literal: " . $arrayLiteral); // Log the array literal
 
 // Use DB::raw to construct the array literal
-            DB::table('productVariant')
-                ->where('id', $variants->id)
-                ->update([
-                    'images' => DB::raw($arrayLiteral),
-                    'updatedAt' => now(),
-                ]);
+                DB::table('productVariant')
+                    ->where('id', $variants->id)
+                    ->update([
+                        'images' => DB::raw($arrayLiteral),
+                        'updatedAt' => now(),
+                    ]);
+            }
+
+
 
             if ($request->has('prices')) {
                 $prices = [];
@@ -149,9 +152,13 @@ class ProductController extends Controller
             }
 
 
-            return response()->json([
-                'product' => $product
-            ], 201);
+            return $this->apiResponse(
+                $product->load('ProductVariants','productTranslations'),
+                'Product created successfully',
+                true,
+                201
+            );
+
         });
     }
 

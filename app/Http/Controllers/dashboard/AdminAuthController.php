@@ -24,6 +24,7 @@ class AdminAuthController extends Controller
 
     use ApiResponseTrait;
 
+
 //    public function fcm(Request $request){
 //        $rules = [
 //            'fcm_token' => 'required', // Ensure fcm_token is part of the request
@@ -59,16 +60,15 @@ class AdminAuthController extends Controller
         $rules = [
             'email' => 'required|email',
             'password' => 'required|string',
-         ];
+        ];
 
-            $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             $errors = $validator->errors()->toArray();
             $errorMessage = implode(" ", array_map(fn($field) => $errors[$field][0], array_keys($errors)));
             return $this->apiRespose($errors, $errorMessage, false, 400);
         }
-
 
 
         $admin = Admin::where('email', $request->email)->first();
@@ -84,8 +84,6 @@ class AdminAuthController extends Controller
     }
 
 
-
-
     public function profile()
     {
         return $this->apiRespose(
@@ -96,11 +94,14 @@ class AdminAuthController extends Controller
 
     public function logout()
     {
+        if (!Auth::check()) {
+            return $this->apiRespose([], 'You are not logged in.', false, 400);
+        }
+
         Auth::user()->tokens()->delete();
         return $this->apiRespose([], 'logout success', true, 200);
 
     }
-
 
 
 

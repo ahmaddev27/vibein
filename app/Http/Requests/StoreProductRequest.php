@@ -38,7 +38,8 @@ class StoreProductRequest extends FormRequest
 //            'category_id.*' => 'exists:categories,id',
             'sub_category_id' => 'required|array|min:1',
             'sub_category_id.*' => 'nullable',
-
+            'images'=> 'nullable|array|min:1',
+            'quantity' => 'required|numeric|min:1',
             // Pieces
             'prices' => 'required|array|min:1',
             'prices.*.weight' => 'required|numeric|min:0.01',
