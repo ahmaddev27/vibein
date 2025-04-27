@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -17,6 +18,14 @@ class Brand extends Model
         'updatedAt',
         'createdAt'
     ];
+
+
+    protected static function booted()
+    {
+        static::addGlobalScope('company', function (Builder $builder) {
+            $builder->where('companyId', 31);
+        });
+    }
 
     // Custom timestamp column names
     const CREATED_AT = 'createdAt';

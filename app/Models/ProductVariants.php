@@ -22,7 +22,6 @@ ProductVariants extends Model
         'colorCode',
         'productId',
         'prices',
-        'images',
         'createdAt',
         'updatedAt',
     ];
@@ -39,37 +38,6 @@ ProductVariants extends Model
         'images' => 'array',
     ];
 
-    public function getImagesAttribute($value)
-    {
-        // If the value is empty, return an empty array
-        if (empty($value)) {
-            return [];
-        }
-
-        // Handle both formats: raw DB string or already converted array
-        if (is_array($value)) {
-            $imagePaths = $value; // Already converted by cast
-        } else {
-            // Handle raw DB string format (e.g., "{path1,path2}")
-            $value = trim($value, '{}'); // Remove curly braces
-            $imagePaths = $value ? array_map('trim', explode(',', $value)) : [];
-        }
-
-        // Base URL for images
-        $baseUrl = url('/storage'); // Assuming images are stored in the "public/storage" directory
-
-        // Check if each image path is already a URL, and prepend the base URL if not
-        $fullUrls = array_map(function ($path) use ($baseUrl) {
-            // Check if the path starts with "http://" or "https://"
-            if (filter_var($path, FILTER_VALIDATE_URL)) {
-                return $path; // Path is already a URL
-            }
-            // Prepend the base URL to the path
-            return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
-        }, $imagePaths);
-
-        return $fullUrls;
-    }
 
 
     public function getNameAttribute()

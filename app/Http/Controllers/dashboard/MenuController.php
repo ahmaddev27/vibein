@@ -20,7 +20,6 @@ class MenuController extends Controller
 
 
 
-
         return $this->apiRespose(
             $menu,
             'Menu retrieved successfully',

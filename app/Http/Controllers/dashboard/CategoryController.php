@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\dashboard;
 
-use App\Http\Controllers\ApiResponsePaginationTrait;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Models\Category;
 use App\Models\CategoryTranslations;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +17,8 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Category::whereNot('parentCategoryId',null)->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc');
+            $query = Category:: where('parentCategoryId', '!=', 0)
+                ->orderBy('id', 'desc')->orderBy('id','desc')->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc');
             $perPage = $request->input('per_page', 10);
             $paginator = $query->paginate($perPage);
 
@@ -58,7 +57,8 @@ class CategoryController extends Controller
     public function SubCategoriesIndex(Request $request)
     {
         try {
-            $query = Category::whereNot('parentCategoryId',null)->withCount('products')->with(['CategoryTranslations']);
+
+           return $query = Category::whereNot('parentCategoryId')->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc')->get();
             $perPage = $request->input('per_page', 10);
             $paginator = $query->paginate($perPage);
 

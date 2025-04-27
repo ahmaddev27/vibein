@@ -35,6 +35,22 @@ class Product extends Model
         });
     }
 
+    public function images()
+    {
+
+        return $this->hasMany(ProductImages::class, 'product_id', 'id');
+    }
+
+    public function getImagesUrlsAttribute()
+    {
+        $baseUrl = env('APP_URL') . '/uploads/'; // أو حسب مكان الصور عندك
+
+        return $this->images->map(function ($image) use ($baseUrl) {
+            return $baseUrl . $image->image_url;
+        });
+    }
+
+
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class,'productCategories','productId','categoryId')->where('subCategory',false);;
@@ -124,7 +140,7 @@ class Product extends Model
 
             return $decoded;
         } catch (\Exception $e) {
-            \Log::error('Error processing options attribute', [
+            Log::error('Error processing options attribute', [
                 'error' => $e->getMessage(),
                 'options' => $options
             ]);

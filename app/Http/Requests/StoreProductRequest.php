@@ -34,11 +34,9 @@ class StoreProductRequest extends FormRequest
             'metaTagTitle' => 'nullable|string|max:255',
 
             // Categories
-            'category_id' => 'nullable|array|min:1',
+            'category_id' => 'required|array|min:1',
 //            'category_id.*' => 'exists:categories,id',
-            'sub_category_id' => 'required|array|min:1',
-            'sub_category_id.*' => 'nullable',
-            'images'=> 'nullable|array|min:1',
+//            'images'=> 'nullable|array|min:1',
             'quantity' => 'required|numeric|min:1',
             // Pieces
             'prices' => 'required|array|min:1',

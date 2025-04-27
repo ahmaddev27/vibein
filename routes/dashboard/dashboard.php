@@ -32,11 +32,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/crmMenu', 'crmMenu')->name('menu.crm');
     });
 
-// Product Routes
+    Route::apiResource('products', ProductController::class)->except(['update']);
     Route::prefix('products')->controller(ProductController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
+        Route::post('/{id}', 'update')->name('update');
+        Route::delete('/images/{id}', 'deleteImage')->name('update.images');
     });
+
 
 // Category Routes
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {

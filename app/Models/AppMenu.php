@@ -10,8 +10,8 @@ class AppMenu extends Model
 
     protected $table = 'appMenu';
 
-    #WEHN GET ALL MENUS FOR CRM
 
+    #WEHN GET ALL MENUS FOR CRM
     protected static function booted()
     {
         static::addGlobalScope('appId', function (Builder $builder) {
