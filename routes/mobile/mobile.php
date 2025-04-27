@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\mobile\AuthController;
 use App\Http\Controllers\mobile\HomeController;
+use App\Http\Controllers\mobile\ProductController;
 
 //<!--Route::middleware('auth:admin')->group(function () {-->
 //<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
@@ -13,22 +14,32 @@ use App\Http\Controllers\mobile\HomeController;
 //<!--});-->
 
 
-
 Route::group(['prefix' => 'mobile'], function () {
 
     Route::controller(AuthController::class)->group(function () {
 
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/send-otp', 'sendOtp');
+        Route::post('/verify-otp', 'verifyOtp');
+    });
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::controller(AuthController::class)->group(function () {
             Route::post('/logout', 'logout');
             Route::get('/profile', 'profile');
         });
 
-        Route::post('/send-otp', 'sendOtp');
-        Route::post('/verify-otp', 'verifyOtp');
-//        Route::post('/fcm', 'fcm');
+
+        Route::controller(HomeController::class)->group(function () {
+            Route::get('/onbording', 'onbording');
+            Route::get('/sliders', 'sliders');
+            Route::get('/categories', 'categories');
+        });
+
+
+        Route::apiResource('products', ProductController::class)->except(['update', 'destroy']);
+
+
     });
-    Route::controller(HomeController::class)->group(function () {
-        Route::get('/onbording', 'onbording');
-        Route::get('/sliders', 'sliders');
-    });
+
+
 });

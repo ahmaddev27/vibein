@@ -101,7 +101,7 @@ class ProductController extends Controller
             if ($request->hasFile('images') && count($request->file('images')) > 0) {
                 foreach ($request->file('images') as $image) {
                     ProductImages::create([
-                        'image' => url('/').$image->store('products', 'public'),
+                        'image' => url('/') . $image->store('products', 'public'),
                         'product_id' => $product->id
                     ]);
                 }
@@ -203,15 +203,16 @@ class ProductController extends Controller
     public function show($id)
     {
 
+
         $product = Product::with([
-            'images' ,
+            'images',
             'categories.CategoryTranslations',
             'Subcategories.CategoryTranslations',
             'productVariants',
             'productTranslations',
             'productTax',
             'Brand.brandTranslation'
-        ])->findOrFail($id);
+        ])->find($id);
 
 
         if (!$product) {
@@ -233,103 +234,120 @@ class ProductController extends Controller
 
     public function update(StoreProductRequest $request, $id)
     {
-        return DB::transaction(function () use ($request, $id) {
+        try {
+            return DB::transaction(function () use ($request, $id) {
 
-            // Fetch the Product
-            $product = Product::findOrFail($id);
+                // Fetch the Product
+                $product = Product::findOrFail($id);
 
-            // Update Product
-            $product->update([
-                'brandId' => $request->brandId,
-                'lable' => $request->label,
-                'status' => $request->status ?? 'Active', // Use provided status or default
+                // Update Product
+                $product->update([
+                    'brandId' => $request->brandId,
+                    'lable' => $request->label,
+                    'status' => $request->status ?? 'Active', // Use provided status or default
+                ]);
+
+                // Update or Create Translation
+                $translation = $product->productTranslations()->where('languageCode', 'en')->first();
+                if ($translation) {
+                    $translation->update([
+                        'name' => $request->name,
+                        'description' => $request->description,
+                        'tags' => $request->tags,
+                        'metaTagTitle' => $request->metaTagTitle
+                    ]);
+                } else {
+                    $product->productTranslations()->create([
+                        'languageCode' => 'en',
+                        'name' => $request->name,
+                        'description' => $request->description,
+                        'tags' => $request->tags,
+                        'metaTagTitle' => $request->metaTagTitle
+                    ]);
+                }
+
+                // Update Variant
+                $variant = $product->ProductVariants()->first();
+                if ($variant) {
+                    $variant->update([
+                        'quantity' => $request->quantity,
+                        'status' => $request->status ?? 'Active',
+                        'updatedAt' => now()
+                    ]);
+                }
+
+                // Handle Image Uploads
+                if ($request->hasFile('images') && count($request->file('images')) > 0) {
+                    foreach ($request->file('images') as $image) {
+                        ProductImages::create([
+                            'image' => url('/') . $image->store('products', 'public'),
+                            'product_id' => $product->id
+                        ]);
+                    }
+                }
+
+                // Update Prices
+                if ($request->has('prices') && count($request->prices) > 0) {
+                    $prices = [];
+                    foreach ($request->prices as $price) {
+                        $prices[] = [
+                            'weight' => $price['weight'],
+                            'price' => $price['price']
+                        ];
+                    }
+
+                    $variant->update([
+                        'prices' => $prices // JSON casting
+                    ]);
+                }
+
+                // Sync Categories
+                ProductCategories::where('productId', $product->id)->delete();
+
+                if ($request->has('category_id') && count($request->category_id) > 0) {
+                    foreach ($request->category_id as $categoryId) {
+                        ProductCategories::create([
+                            'productId' => $product->id,
+                            'categoryId' => $categoryId,
+                            'subCategory' => false
+                        ]);
+                    }
+                }
+
+                if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
+                    foreach ($request->sub_category_id as $scategoryId) {
+                        ProductCategories::create([
+                            'productId' => $product->id,
+                            'categoryId' => $scategoryId,
+                            'subCategory' => true
+                        ]);
+                    }
+                }
+
+                return $this->apiResponse(
+                    $product->load('images', 'productTranslations', 'ProductVariants', 'productTranslations'),
+                    'Product updated successfully',
+                    true,
+                    200
+                );
+
+
+            });
+
+
+        } catch (\Exception $e) {
+            Log::error('Product not found: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id
             ]);
 
-            // Update or Create Translation
-            $translation = $product->productTranslations()->where('languageCode', 'en')->first();
-            if ($translation) {
-                $translation->update([
-                    'name' => $request->name,
-                    'description' => $request->description,
-                    'tags' => $request->tags,
-                    'metaTagTitle' => $request->metaTagTitle
-                ]);
-            } else {
-                $product->productTranslations()->create([
-                    'languageCode' => 'en',
-                    'name' => $request->name,
-                    'description' => $request->description,
-                    'tags' => $request->tags,
-                    'metaTagTitle' => $request->metaTagTitle
-                ]);
-            }
-
-            // Update Variant
-            $variant = $product->ProductVariants()->first();
-            if ($variant) {
-                $variant->update([
-                    'quantity' => $request->quantity,
-                    'status' => $request->status ?? 'Active',
-                    'updatedAt' => now()
-                ]);
-            }
-
-            // Handle Image Uploads
-            if ($request->hasFile('images') && count($request->file('images')) > 0) {
-                foreach ($request->file('images') as $image) {
-                    ProductImages::create([
-                        'image' => url('/').$image->store('products', 'public'),
-                        'product_id' => $product->id
-                    ]);
-                }
-            }
-
-            // Update Prices
-            if ($request->has('prices') && count($request->prices) > 0) {
-                $prices = [];
-                foreach ($request->prices as $price) {
-                    $prices[] = [
-                        'weight' => $price['weight'],
-                        'price' => $price['price']
-                    ];
-                }
-
-                $variant->update([
-                    'prices' => $prices // JSON casting
-                ]);
-            }
-
-            // Sync Categories
-            ProductCategories::where('productId', $product->id)->delete();
-
-            if ($request->has('category_id') && count($request->category_id) > 0) {
-                foreach ($request->category_id as $categoryId) {
-                    ProductCategories::create([
-                        'productId' => $product->id,
-                        'categoryId' => $categoryId,
-                        'subCategory' => false
-                    ]);
-                }
-            }
-
-            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
-                foreach ($request->sub_category_id as $scategoryId) {
-                    ProductCategories::create([
-                        'productId' => $product->id,
-                        'categoryId' => $scategoryId,
-                        'subCategory' => true
-                    ]);
-                }
-            }
-
             return $this->apiResponse(
-                $product->load('images', 'productTranslations', 'ProductVariants', 'productTranslations'),
-                'Product updated successfully',
-                true,
-                200
+                null,
+                'Product not found',
+                false,
+                404
             );
-
-        });
+        }
     }
 
     public function deleteImage($imageId)
