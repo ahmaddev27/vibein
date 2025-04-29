@@ -55,14 +55,14 @@ Route::prefix('admin')->group(function () {
     });
 
 
-    Route::apiResource('sliders', SliderController::class)->except(['show', 'update']);
+    Route::apiResource('sliders', SliderController::class)->except(['update']);
     Route::prefix('sliders')->controller(SliderController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
 
     });
 
 
-    Route::apiResource('onboardings', OnboardingController::class)->except(['show', 'update']);
+    Route::apiResource('onboardings', OnboardingController::class)->except(['update']);
     Route::prefix('onboardings')->controller(OnboardingController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
     });

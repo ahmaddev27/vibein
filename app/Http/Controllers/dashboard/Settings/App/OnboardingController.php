@@ -86,6 +86,22 @@ class OnboardingController extends Controller
         );
     }
 
+    public function show($id)
+    {
+        $onbording = Onboarding::find($id);
+
+        if (!$onbording) {
+            return $this->apiResponse(null, 'Onboarding not found', false, 404);
+        }
+
+        return $this->apiResponse(
+            new OnboardingResources($onbording),
+            'successfully',
+            true,
+            200
+        );
+
+    }
 
     public function destroy($id)
     {

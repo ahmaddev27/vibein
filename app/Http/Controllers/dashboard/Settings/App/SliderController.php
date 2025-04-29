@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SliderResources;
 use App\Models\Sliders;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class SliderController extends Controller
@@ -77,6 +76,20 @@ class SliderController extends Controller
         );
     }
 
+    public function show($id)
+    {
+
+        $slider = Sliders::find($id);
+        if (!$slider) {
+            return $this->apiResponse(null, 'Slider not found', false, 404);
+        }
+        return $this->apiResponse(
+            new SliderResources($slider),
+            'Slider retrieved successfully',
+            true,
+            200
+        );
+    }
 
     public function destroy($id)
     {
@@ -87,8 +100,6 @@ class SliderController extends Controller
                 Storage::disk('public')->delete($slider->image);
             }
         }
-
-
 
 
         $slider->delete();
