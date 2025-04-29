@@ -26,7 +26,7 @@ class BrandController extends Controller
 
             if ($request->has('search')) {
                 $search = $request->search;
-                $query->whereHas('brandTranslation', function($q) use ($search) {
+                $query->whereHas('brandTranslation', function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
@@ -67,6 +67,28 @@ class BrandController extends Controller
             );
         }
     }
+
+    public function show($id)
+    {
+        $brand = Brand::with('brandTranslation')->find($id);
+        if (!$brand) {
+            return $this->apiResponse(
+                null,
+                'Brand not found',
+                false,
+                404
+            );
+        }
+
+        return $this->apiResponse(
+            $brand,
+            'Brand retrieved successfully',
+            true,
+            200
+        );
+
+    }
+
     public function store(StoreBrandRequest $request)
     {
         DB::beginTransaction();
@@ -85,7 +107,7 @@ class BrandController extends Controller
 
             $brand = Brand::create($brandData);
 
-             $brand->brandTranslation()->create([
+            $brand->brandTranslation()->create([
                 'name' => $request->name,
                 'description' => $request->description,
                 'metaTagTitle' => $request->metaTagTitle,
@@ -115,4 +137,89 @@ class BrandController extends Controller
             );
         }
     }
+
+    public function update(StoreBrandRequest $request, $id)
+    {
+
+        $brand = Brand::find($id);
+        if (!$brand) {
+            return $this->apiResponse(
+                null,
+                'Brand not found',
+                false,
+                404
+            );
+        }
+
+        DB::beginTransaction();
+        try {
+            $brandData = [
+                'companyId' => $request->companyId,
+                'showStatus' => $request->showStatus,
+                'sortOrder' => $request->sortOrder ?? 0,
+            ];
+
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('brands', 'public');
+                $brandData['image'] = $imagePath;
+            }
+
+            $brand->update($brandData);
+
+            $brand->brandTranslation()->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'metaTagTitle' => $request->metaTagTitle,
+                'metaTagDescription' => $request->metaTagDescription,
+                'metaTagKeywords' => $request->metaTagKeywords,
+                'languageCode' => $request->languageCode,
+            ]);
+
+            DB::commit();
+
+            return $this->apiResponse(
+                $brand->load('brandTranslation'),
+                'Brand updated successfully',
+                true,
+                200
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->apiResponse(
+                null,
+                'Failed to update brand: ' . $e->getMessage(),
+                false,
+                500
+            );
+        }
+
     }
+
+    public function destroy($id)
+    {
+
+        $brand = Brand::find($id);
+        if (!$brand) {
+            return $this->apiResponse(
+                null,
+                'Brand not found',
+                false,
+                404
+            );
+        }
+
+        // Delete the brand
+        $brand->delete();
+
+        return $this->apiResponse(
+            null,
+            'Brand deleted successfully',
+            true,
+            200
+        );
+
+
+    }
+}

@@ -41,17 +41,19 @@ Route::prefix('admin')->group(function () {
 
 
 // Category Routes
+
+    Route::apiResource('categories', CategoryController::class)->except(['update']);
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/sub', 'SubCategoriesIndex')->name('sub');
-        Route::post('/', 'store')->name('store');
+        Route::post('/{id}', 'update')->name('update');
     });
 
 // Brand Routes
+
+    Route::apiResource('brands', BrandController::class)->except(['update']);
     Route::prefix('brands')->controller(BrandController::class)->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
+        Route::post('/{id}', 'update')->name('update');
     });
+
 
     Route::apiResource('sliders', SliderController::class)->except(['show', 'update']);
     Route::prefix('sliders')->controller(SliderController::class)->group(function () {
@@ -64,9 +66,6 @@ Route::prefix('admin')->group(function () {
     Route::prefix('onboardings')->controller(OnboardingController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
     });
-
-
-
 
 
     Route::apiResource('packages', PackageController::class)->except(['update']);

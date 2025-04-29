@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\CategoryTranslations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -19,7 +20,7 @@ class CategoryController extends Controller
 
 
         try {
-            $query = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc');
+            $query = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations'])->orderBy('id', 'desc');
             $perPage = $request->input('per_page', 10);
             $paginator = $query->paginate($perPage);
 
@@ -41,46 +42,6 @@ class CategoryController extends Controller
         } catch (\Exception $e) {
             // Log the error with stack trace
             Log::error('Categories index error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return $this->apiRespose(
-                ['error' => 'Server error occurred'],
-                'Error retrieving Categories',
-                false,
-                500
-            );
-        }
-    }
-
-    public function SubCategoriesIndex(Request $request)
-    {
-        try {
-
-           return $query = Category::whereNot('parentCategoryId')->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc')->get();
-            $perPage = $request->input('per_page', 10);
-            $paginator = $query->paginate($perPage);
-
-            if ($paginator->isEmpty()) {
-                return $this->ApiResponsePaginationTrait(
-                    $paginator,
-                    'No Sub Categories found',
-                    true,
-                    200
-                );
-            }
-
-            return $this->ApiResponsePaginationTrait(
-                $paginator,
-                'Sub Categories retrieved successfully',
-                true,
-                200
-            );
-        } catch (\Exception $e) {
-            // Log the error with stack trace
-            Log::error('Sub Categories index error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'trace' => $e->getTraceAsString()
@@ -125,7 +86,7 @@ class CategoryController extends Controller
             'languageCode' => $request->languageCode,
         ];
 
-       CategoryTranslations::create($translationData);
+        CategoryTranslations::create($translationData);
 
         return $this->apiResponse(
             $category->load('CategoryTranslations'),
@@ -136,4 +97,111 @@ class CategoryController extends Controller
 
     }
 
+    public function show($id)
+    {
+
+        $category = Category::with(['CategoryTranslations'])->find($id);
+        if (!$category) {
+            return $this->apiResponse(
+                null,
+                'Category not found',
+                false,
+                404
+            );
+        }
+        return $this->apiResponse(
+            $category,
+            'Category retrieved successfully',
+            true,
+            200
+        );
+    }
+
+
+    public function update(StoreCategoryRequest $request, $id)
+    {
+        $category = Category::find($id);
+        if (!$category) {
+            return $this->apiResponse(
+                null,
+                'Category not found',
+                false,
+                404
+            );
+        }
+        // Prepare category data
+        $categoryData = [
+            'parentCategoryId' => $request->parentCategoryId,
+            'companyId' => $request->companyId,
+            'showStatus' => $request->showStatus,
+            'sortOrder' => $request->sortOrder ?? 0,
+        ];
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+
+            $categoryData['image'] = $request->file('image')->store('categories', 'public');
+
+        }
+
+
+        // Create category
+        $category = Category::create($categoryData);
+
+        // Create translation
+        $translationData = [
+            'categoryId' => $category->id,
+            'name' => $request->name,
+            'description' => $request->description,
+            'metaTagTitle' => $request->metaTagTitle,
+            'metaTagDescription' => $request->metaTagDescription,
+            'metaTagKeywords' => $request->metaTagKeywords,
+            'languageCode' => $request->languageCode,
+        ];
+
+        CategoryTranslations::create($translationData);
+
+        return $this->apiResponse(
+            $category->load('CategoryTranslations'),
+            'Category updated successfully',
+            true,
+            200
+        );
+
+    }
+
+    public function destroy($id)
+    {
+
+        $category = Category::find($id);
+        if (!$category) {
+            return $this->apiResponse(
+                null,
+                'Category not found',
+                false,
+                404
+            );
+        }
+
+        // Delete the category image if it exists
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        // Delete the category
+        $category->delete();
+
+        return $this->apiResponse(
+            null,
+            'Category deleted successfully',
+            true,
+            200
+        );
+
+
+    }
 }
+
+

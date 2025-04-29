@@ -9,6 +9,7 @@ use App\Models\Package;
 use App\Models\PackageImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PackageController extends Controller
 {
@@ -234,10 +235,11 @@ class PackageController extends Controller
 
         if ($package->images) {
             foreach ($package->images as $image) {
-                $imagePath = public_path('storage/' . $image->image);
-                if (file_exists($imagePath)) {
-                    unlink($imagePath);
+
+                if ($image->image) {
+                    Storage::disk('public')->delete($image->image);
                 }
+
                 $image->delete();
             }
         }
@@ -265,11 +267,10 @@ class PackageController extends Controller
             );
         }
 
-        $imagePath = public_path('storage/' . $image->image);
-
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
+        if ($image->image) {
+            Storage::disk('public')->delete($image->image);
         }
+
         $image->delete();
 
         return $this->apiRespose(
