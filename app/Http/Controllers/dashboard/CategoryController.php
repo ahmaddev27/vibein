@@ -16,9 +16,10 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
+
+
         try {
-            $query = Category:: where('parentCategoryId', '!=', 0)
-                ->orderBy('id', 'desc')->orderBy('id','desc')->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc');
+            $query = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations'])->orderBy('id','desc');
             $perPage = $request->input('per_page', 10);
             $paginator = $query->paginate($perPage);
 

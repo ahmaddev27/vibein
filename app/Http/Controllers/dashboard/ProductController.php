@@ -5,6 +5,7 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Resources\dashboard\ProductResource;
 use App\Models\Product;
 use App\Models\ProductCategories;
 use App\Models\ProductImages;
@@ -32,13 +33,21 @@ class ProductController extends Controller
             ])->orderBy('id', 'desc');
 
 
+            if ($request->has('category_id')) {
+                $query->whereHas('categories', function ($q) use ($request) {
+                    $q->where('categoryId', $request->input('category_id'));
+                });
+            }
+
+
+
             $perPage = $request->input('per_page', 10);
             $products = $query->paginate($perPage);
 
 
             if ($products->isEmpty()) {
                 return $this->ApiResponsePaginationTrait(
-                    $products,
+                    ProductResource::collection($products),
                     'No products found',
                     true,
                     200
@@ -46,7 +55,7 @@ class ProductController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-                $products,
+                ProductResource::collection($products),
                 'Products retrieved successfully',
                 true,
                 200
@@ -101,7 +110,7 @@ class ProductController extends Controller
             if ($request->hasFile('images') && count($request->file('images')) > 0) {
                 foreach ($request->file('images') as $image) {
                     ProductImages::create([
-                        'image' => url('/') . $image->store('products', 'public'),
+                        'image' => $image->store('products', 'public'),
                         'product_id' => $product->id
                     ]);
                 }
@@ -151,7 +160,8 @@ class ProductController extends Controller
 
 
             return $this->apiResponse(
-                $product->load('images', 'productTranslations', 'ProductVariants', 'productTranslations'),
+                new ProductResource($product),
+
                 'Product created successfully',
                 true,
                 201
@@ -225,7 +235,8 @@ class ProductController extends Controller
         }
 
         return $this->apiResponse(
-            $product,
+            new ProductResource($product),
+
             'Product retrieved successfully',
             true,
             200
@@ -280,7 +291,7 @@ class ProductController extends Controller
                 if ($request->hasFile('images') && count($request->file('images')) > 0) {
                     foreach ($request->file('images') as $image) {
                         ProductImages::create([
-                            'image' => url('/') . $image->store('products', 'public'),
+                            'image' => $image->store('products', 'public'),
                             'product_id' => $product->id
                         ]);
                     }
@@ -325,7 +336,7 @@ class ProductController extends Controller
                 }
 
                 return $this->apiResponse(
-                    $product->load('images', 'productTranslations', 'ProductVariants', 'productTranslations'),
+                    new ProductResource($product),
                     'Product updated successfully',
                     true,
                     200

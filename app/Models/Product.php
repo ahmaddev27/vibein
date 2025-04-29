@@ -41,15 +41,6 @@ class Product extends Model
         return $this->hasMany(ProductImages::class, 'product_id', 'id');
     }
 
-    public function getImagesUrlsAttribute()
-    {
-        $baseUrl = env('APP_URL') . '/uploads/'; // أو حسب مكان الصور عندك
-
-        return $this->images->map(function ($image) use ($baseUrl) {
-            return $baseUrl . $image->image_url;
-        });
-    }
-
 
     public function categories(): BelongsToMany
     {
