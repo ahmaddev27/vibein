@@ -27,9 +27,9 @@ class MachineController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $machines->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+            $search_by = $request->get('search_by', 'name');
+            $machines->where(function ($query) use ($search, $search_by) {
+                $query->where($search_by, 'like', "%{$search}%");
             });
         }
 

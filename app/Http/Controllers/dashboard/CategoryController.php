@@ -28,12 +28,17 @@ class CategoryController extends Controller
             }
 
             if ($request->has('search')) {
-                $search = $request->search;
-                $categories->whereHas('CategoryTranslations', function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
+
+                    $search = $request->search;
+                    $search_by = $request->get('search_by', 'name');
+                    $categories->whereHas('CategoryTranslations', function ($q) use ($search, $search_by) {
+                        $q->where($search_by, 'like', "%{$search}%");
+                    });
+
             }
+
+
+
 
 
             // Apply sorting
