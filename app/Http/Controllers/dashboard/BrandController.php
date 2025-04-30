@@ -16,9 +16,8 @@ class BrandController extends Controller
     public function index(Request $request)
     {
         try {
-            // Start building the query
-            $query = Brand::with('brandTranslation');
 
+            $query = Brand::with('brandTranslation');
 
             if ($request->has('status')) {
                 $query->where('showStatus', $request->status);

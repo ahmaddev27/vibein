@@ -20,9 +20,30 @@ class CategoryController extends Controller
 
 
         try {
-            $query = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations'])->orderBy('id', 'desc');
+            $categories = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations']);
+
+
+            if ($request->has('status')) {
+                $categories->where('showStatus', $request->status);
+            }
+
+            if ($request->has('search')) {
+                $search = $request->search;
+                $categories->whereHas('CategoryTranslations', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+
+            // Apply sorting
+            $sortField = $request->get('sort_by', 'createdAt');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $categories->orderBy($sortField, $sortDirection);
+
+
             $perPage = $request->input('per_page', 10);
-            $paginator = $query->paginate($perPage);
+            $paginator = $categories->paginate($perPage);
 
             if ($paginator->isEmpty()) {
                 return $this->ApiResponsePaginationTrait(

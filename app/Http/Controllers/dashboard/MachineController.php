@@ -38,8 +38,10 @@ class MachineController extends Controller
         }
 
         // Apply sorting
+        $sortField = $request->get('sort_by', 'createdAt');
         $sortDirection = $request->get('sort_dir', 'desc');
-        $machines->orderBy('id', $sortDirection);
+        $machines->orderBy($sortField, $sortDirection);
+
         // Paginate results
         $perPage = $request->input('per_page', 10);
         $machines = $machines->paginate($perPage);

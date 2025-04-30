@@ -30,7 +30,26 @@ class ProductController extends Controller
                 'productTax',
                 'Brand.brandTranslation',
 
-            ])->orderBy('id', 'desc');
+            ]);
+
+
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->has('search')) {
+                $search = $request->search;
+                $query->whereHas('productTranslations', function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
+                });
+            }
+
+
+            // Apply sorting
+            $sortField = $request->get('sort_by', 'createdAt');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $query->orderBy($sortField, $sortDirection);
 
 
             if ($request->has('category_id')) {
@@ -38,7 +57,6 @@ class ProductController extends Controller
                     $q->where('categoryId', $request->input('category_id'));
                 });
             }
-
 
 
             $perPage = $request->input('per_page', 10);
