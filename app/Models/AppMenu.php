@@ -15,9 +15,10 @@ class AppMenu extends Model
     protected static function booted()
     {
         static::addGlobalScope('appId', function (Builder $builder) {
-            $builder->where('appId', 3)->where('appGroupId',12)->orderBy('order', 'asc')->where('deletedAt',null);
+            $builder->where('appId', 3)->where('appGroupId', 12)->orderBy('order', 'asc')->where('deletedAt', null);
         });
     }
+
 
     #WEHN GET ALL MENUS FOR VIBIN
 

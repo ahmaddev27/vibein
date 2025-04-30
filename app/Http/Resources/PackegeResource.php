@@ -23,7 +23,7 @@ class PackegeResource extends JsonResource
             'total' => $this->total,
             'products' => $this->products->map(function ($product) {
                 return [
-                    'id' => $product->id,
+                    'id' => $product->product->id,
                     'name' => $product->product->productTranslations->first()->name,
                     'position' => $product->position,
                     'is_selected' => $product->is_selected,
@@ -33,7 +33,7 @@ class PackegeResource extends JsonResource
 
             'alternatives' => $this->alternatives->map(function ($alternative) {
                 return [
-                    'id' => $alternative->id,
+                    'id' => $alternative->product->id,
                     'name' => $alternative->product->productTranslations->first()->name,
                     'position' => $alternative->position,
                     'is_selected' => $alternative->is_selected,
