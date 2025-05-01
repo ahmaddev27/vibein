@@ -48,8 +48,8 @@ class MachineController extends Controller
 
 
         if ($machines->isEmpty()) {
-            return $this->apiResponse(
-                [],
+            return $this->apiRespose(
+                null,
                 'No Machines found',
                 true,
                 200

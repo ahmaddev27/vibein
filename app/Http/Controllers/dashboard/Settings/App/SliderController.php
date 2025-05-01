@@ -57,7 +57,8 @@ class SliderController extends Controller
         if ($request->hasFile('image')) {
             // Delete the old image if it exists
             if ($slider->image && file_exists(public_path('storage/' . $slider->image))) {
-                @unlink(public_path('storage/' . $slider->image));
+                Storage::disk('public')->delete($slider->image);
+
             }
 
             // Store new image

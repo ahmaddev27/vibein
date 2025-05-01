@@ -37,11 +37,12 @@ class StoreProductRequest extends FormRequest
             'category_id' => 'required|array|min:1',
 //            'category_id.*' => 'exists:categories,id',
 //            'images'=> 'nullable|array|min:1',
-            'quantity' => 'required|numeric|min:1',
             // Pieces
             'prices' => 'nullable|array|min:1',
             'prices.*.weight' => 'required|numeric|min:0.01',
-            'prices.*.price' => 'required|numeric|min:0.01'
+            'prices.*.price' => 'required|numeric|min:0.01',
+            'prices.*.quantity' => 'required|numeric|min:1',
+
         ];
     }
 

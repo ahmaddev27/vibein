@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\OnboardingResources;
 use App\Models\Onboarding;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class OnboardingController extends Controller
@@ -23,16 +24,17 @@ class OnboardingController extends Controller
     {
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif',
-            'title'=> 'required|string|max:255',
-            'description'=> 'required|string|max:400',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:400',
         ]);
 
 
-
         $slider = new Onboarding();
-        $slider->image = $request->file('image')->store('sliders', 'public');
+        $slider->image = $request->file('image')->store('onboarding', 'public');
         $slider->title = $request->input('title');
         $slider->description = $request->input('description');
+
+
         $slider->save();
 
         return $this->apiResponse(
@@ -46,46 +48,51 @@ class OnboardingController extends Controller
 
     public function update(Request $request, $id)
     {
-        $request->validate([
+        // Validate the request
+        $validated = $request->validate([
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif',
-            'title'=> 'required|string|max:255',
-            'description'=> 'required|string|max:400',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:400',
         ]);
 
+        // Find the onboarding record
+        $onboarding = Onboarding::find($id);
 
-        // Find the slider or return error
-        $onbording = Onboarding::find($id);
-
-        if (!$onbording) {
+        if (!$onboarding) {
             return $this->apiResponse(null, 'Onboarding not found', false, 404);
         }
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete the old image if it exists
-            if ($onbording->image && file_exists(public_path('storage/' . $onbording->image))) {
-                @unlink(public_path('storage/' . $onbording->image));
+        try {
+            // Handle image upload if file exists
+            if ($request->hasFile('image') && $request->file('image')->isValid()) {
+                // Delete old image if exists
+                if ($onboarding->image) {
+                    Storage::disk('public')->delete($onboarding->image);
+                }
+
+                // Store new image
+                $onboarding->image = $request->file('image')->store('onboarding', 'public');
             }
 
-            // Store new image
-            $onbording->image = $request->file('image')->store('sliders', 'public');
+            // Update other fields
+            $onboarding->title = $validated['title'];
+            $onboarding->description = $validated['description'];
+
+            // Save the updated record
+            $onboarding->save();
+
+            return $this->apiResponse(
+                new OnboardingResources($onboarding),
+                'Updated successfully',
+                true,
+                200
+            );
+        } catch (\Exception $e) {
+            Log::error('Onboarding update failed: ' . $e->getMessage());
+
+            return $this->apiResponse(null, 'Failed to update onboarding.', false, 500);
         }
-
-        // Update other fields
-        $onbording->title = $request->input('title', $onbording->title);
-        $onbording->description = $request->input('description', $onbording->description);
-        // Save updated slider
-        $onbording->save();
-
-        // Return response
-        return $this->apiResponse(
-            new OnboardingResources($onbording),
-            'Updated successfully',
-            true,
-            200
-        );
     }
-
     public function show($id)
     {
         $onbording = Onboarding::find($id);

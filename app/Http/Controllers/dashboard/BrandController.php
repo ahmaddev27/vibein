@@ -45,8 +45,8 @@ class BrandController extends Controller
             $perPage = $request->input('per_page', 10);
             $brands = $query->paginate($perPage);
             if ($brands->isEmpty()) {
-                return $this->ApiResponsePaginationTrait(
-                    $brands,
+                return $this->apiRespose(
+                    null,
                     'No Brands found',
                     true,
                     200

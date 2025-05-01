@@ -51,8 +51,8 @@ class CategoryController extends Controller
             $paginator = $categories->paginate($perPage);
 
             if ($paginator->isEmpty()) {
-                return $this->ApiResponsePaginationTrait(
-                    $paginator,
+                return $this->apiRespose(
+                    null,
                     'No Categories found',
                     true,
                     200

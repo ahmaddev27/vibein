@@ -65,8 +65,8 @@ class ProductController extends Controller
 
 
             if ($products->isEmpty()) {
-                return $this->ApiResponsePaginationTrait(
-                    ProductResource::collection($products),
+                return $this->apiRespose(
+                    null,
                     'No products found',
                     true,
                     200
@@ -119,7 +119,7 @@ class ProductController extends Controller
 
             $variants = $product->ProductVariants()->create([
                 'productId' => $product->id,
-                'quantity' => $request->quantity,
+//                'quantity' => $request->quantity,
                 'status' => 'Active', // Default status
                 'createdAt' => now(),
                 'updatedAt' => now()
@@ -142,7 +142,8 @@ class ProductController extends Controller
                 foreach ($request->prices as $price) {
                     $prices[] = [
                         'weight' => $price['weight'],
-                        'price' => $price['price']
+                        'price' => $price['price'],
+                        'quantity' => $price['quantity']
                     ];
                 }
 
@@ -264,108 +265,111 @@ class ProductController extends Controller
 
     public function update(StoreProductRequest $request, $id)
     {
+
         try {
-            return DB::transaction(function () use ($request, $id) {
 
-                // Fetch the Product
-                $product = Product::findOrFail($id);
+            DB::beginTransaction();
 
-                // Update Product
-                $product->update([
-                    'brandId' => $request->brandId,
-                    'lable' => $request->label,
-                    'status' => $request->status ?? 'Active', // Use provided status or default
+            // Fetch the Product
+            $product = Product::find($id);
+
+            // Update Product
+            $product->update([
+                'brandId' => $request->brandId,
+                'lable' => $request->label,
+                'status' => $request->status ?? 'Active', // Use provided status or default
+            ]);
+
+            // Update or Create Translation
+            $translation = $product->productTranslations()->where('languageCode', 'en')->first();
+            if ($translation) {
+                $translation->update([
+                    'name' => $request->name,
+                    'description' => $request->description,
+                    'tags' => $request->tags,
+                    'metaTagTitle' => $request->metaTagTitle
                 ]);
+            } else {
+                $product->productTranslations()->create([
+                    'languageCode' => 'en',
+                    'name' => $request->name,
+                    'description' => $request->description,
+                    'tags' => $request->tags,
+                    'metaTagTitle' => $request->metaTagTitle
+                ]);
+            }
 
-                // Update or Create Translation
-                $translation = $product->productTranslations()->where('languageCode', 'en')->first();
-                if ($translation) {
-                    $translation->update([
-                        'name' => $request->name,
-                        'description' => $request->description,
-                        'tags' => $request->tags,
-                        'metaTagTitle' => $request->metaTagTitle
-                    ]);
-                } else {
-                    $product->productTranslations()->create([
-                        'languageCode' => 'en',
-                        'name' => $request->name,
-                        'description' => $request->description,
-                        'tags' => $request->tags,
-                        'metaTagTitle' => $request->metaTagTitle
-                    ]);
-                }
+            // Update Variant
+            $variant = $product->ProductVariants()->first();
+            if ($variant) {
+                $variant->update([
+//                    'quantity' => $request->quantity,
+                    'status' => $request->status ?? 'Active',
+                    'updatedAt' => now()
+                ]);
+            }
 
-                // Update Variant
-                $variant = $product->ProductVariants()->first();
-                if ($variant) {
-                    $variant->update([
-                        'quantity' => $request->quantity,
-                        'status' => $request->status ?? 'Active',
-                        'updatedAt' => now()
-                    ]);
-                }
-
-                // Handle Image Uploads
-                if ($request->hasFile('images') && count($request->file('images')) > 0) {
-                    foreach ($request->file('images') as $image) {
-                        ProductImages::create([
-                            'image' => $image->store('products', 'public'),
-                            'product_id' => $product->id
-                        ]);
-                    }
-                }
-
-                // Update Prices
-                if ($request->has('prices') && count($request->prices) > 0) {
-                    $prices = [];
-                    foreach ($request->prices as $price) {
-                        $prices[] = [
-                            'weight' => $price['weight'],
-                            'price' => $price['price']
-                        ];
-                    }
-
-                    $variant->update([
-                        'prices' => $prices // JSON casting
+            // Handle Image Uploads
+            if ($request->hasFile('images') && count($request->file('images')) > 0) {
+                foreach ($request->file('images') as $image) {
+                    ProductImages::create([
+                        'image' => $image->store('products', 'public'),
+                        'product_id' => $product->id
                     ]);
                 }
+            }
 
-                // Sync Categories
-                ProductCategories::where('productId', $product->id)->delete();
-
-                if ($request->has('category_id') && count($request->category_id) > 0) {
-                    foreach ($request->category_id as $categoryId) {
-                        ProductCategories::create([
-                            'productId' => $product->id,
-                            'categoryId' => $categoryId,
-                            'subCategory' => false
-                        ]);
-                    }
+            // Update Prices
+            if ($request->has('prices') && count($request->prices) > 0) {
+                $prices = [];
+                foreach ($request->prices as $price) {
+                    $prices[] = [
+                        'weight' => $price['weight'],
+                        'price' => $price['price'],
+                        'quantity' => $price['quantity']
+                    ];
                 }
 
-                if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
-                    foreach ($request->sub_category_id as $scategoryId) {
-                        ProductCategories::create([
-                            'productId' => $product->id,
-                            'categoryId' => $scategoryId,
-                            'subCategory' => true
-                        ]);
-                    }
+                $variant->update([
+                    'prices' => $prices // JSON casting
+                ]);
+            }
+
+            // Sync Categories
+            ProductCategories::where('productId', $product->id)->delete();
+
+            if ($request->has('category_id') && count($request->category_id) > 0) {
+                foreach ($request->category_id as $categoryId) {
+                    ProductCategories::create([
+                        'productId' => $product->id,
+                        'categoryId' => $categoryId,
+                        'subCategory' => false
+                    ]);
                 }
+            }
 
-                return $this->apiResponse(
-                    new ProductResource($product),
-                    'Product updated successfully',
-                    true,
-                    200
-                );
+            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
+                foreach ($request->sub_category_id as $scategoryId) {
+                    ProductCategories::create([
+                        'productId' => $product->id,
+                        'categoryId' => $scategoryId,
+                        'subCategory' => true
+                    ]);
+                }
+            }
 
-
-            });
+            DB::commit();
+            return $this->apiResponse(
+                new ProductResource($product),
+                'Product updated successfully',
+                true,
+                200
+            );
 
 
         } catch (\Exception $e) {
+
+            DB::rollBack();
             Log::error('Product not found: ' . $e->getMessage(), [
                 'exception' => $e,
                 'id' => $id
@@ -373,7 +377,7 @@ class ProductController extends Controller
 
             return $this->apiResponse(
                 null,
-                'Product not found',
+                'Error updating product',
                 false,
                 404
             );

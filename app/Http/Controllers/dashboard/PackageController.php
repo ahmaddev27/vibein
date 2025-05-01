@@ -26,8 +26,8 @@ class PackageController extends Controller
 
 
             if ($packages->isEmpty()) {
-                return $this->ApiResponsePaginationTrait(
-                    PackegeResource::collection($packages),
+                return $this->apiRespose(
+                    null,
                     'No Packages found',
                     true,
                     200
