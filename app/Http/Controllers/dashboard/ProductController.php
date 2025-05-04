@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductCategories;
 use App\Models\ProductImages;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -21,24 +22,22 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Product::with([
-                'images',
+            $query = Product::select('id', 'status') // تحديد الأعمدة
+            ->with([
+                'images:id,product_id,image',
+                'categories:id',
                 'categories.CategoryTranslations',
-                'Subcategories.CategoryTranslations',
                 'productVariants',
                 'productTranslations',
-                'productTax',
+                'Brand:id',
                 'Brand.brandTranslation',
-
             ]);
 
-
-            if ($request->has('status')) {
-
+            if ($request->filled('status')) {
                 $query->where('status', $request->status);
             }
 
-            if ($request->has('search')) {
+            if ($request->filled('search')) {
                 $search = $request->search;
                 $search_by = $request->get('search_by', 'name');
                 $query->whereHas('productTranslations', function ($q) use ($search, $search_by) {
@@ -46,31 +45,26 @@ class ProductController extends Controller
                 });
             }
 
+            if ($request->filled('category_id')) {
+                $query->whereHas('categories', function ($q) use ($request) {
+                    $q->where('categoryId', $request->category_id);
+                });
+            }
 
-            // Apply sorting
             $sortField = $request->get('sort_by', 'createdAt');
             $sortDirection = $request->get('sort_dir', 'desc');
             $query->orderBy($sortField, $sortDirection);
 
-
-            if ($request->has('category_id')) {
-                $query->whereHas('categories', function ($q) use ($request) {
-                    $q->where('categoryId', $request->input('category_id'));
-                });
-            }
-
-
             $perPage = $request->input('per_page', 10);
-            $products = $query->paginate($perPage);
 
+            // تحسين الأداء عبر التخزين المؤقت
+            $cacheKey = 'products_' . md5(json_encode($request->all()));
+            $products = Cache::remember($cacheKey, 60, function () use ($query, $perPage) {
+                return $query->paginate($perPage);
+            });
 
             if ($products->isEmpty()) {
-                return $this->apiRespose(
-                    null,
-                    'No products found',
-                    true,
-                    200
-                );
+                return $this->apiRespose(null, 'No products found', true, 200);
             }
 
             return $this->ApiResponsePaginationTrait(
@@ -80,19 +74,13 @@ class ProductController extends Controller
                 200
             );
         } catch (\Exception $e) {
-            // Log the error with stack trace
             Log::error('Product index error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return $this->apiRespose(
-                ['error' => 'Server error occurred'],
-                'Error retrieving products',
-                false,
-                500
-            );
+            return $this->apiRespose(['error' => 'Server error occurred'], 'Error retrieving products', false, 500);
         }
     }
 
@@ -139,8 +127,9 @@ class ProductController extends Controller
             if ($request->has('prices') && count($request->prices) > 0) {
                 $prices = [];
 
-                foreach ($request->prices as $price) {
+                foreach ($request->prices as $key => $price) {
                     $prices[] = [
+                        'id' => $key + 1,
                         'weight' => $price['weight'],
                         'price' => $price['price'],
                         'quantity' => $price['quantity']
@@ -202,6 +191,7 @@ class ProductController extends Controller
                         Storage::disk('public')->delete($image->image);
                     }
                     $image->delete();
+                    Cache::flush();
                 }
             }
 
@@ -322,8 +312,9 @@ class ProductController extends Controller
             // Update Prices
             if ($request->has('prices') && count($request->prices) > 0) {
                 $prices = [];
-                foreach ($request->prices as $price) {
+                foreach ($request->prices as $key => $price) {
                     $prices[] = [
+                        'id' => $key + 1,
                         'weight' => $price['weight'],
                         'price' => $price['price'],
                         'quantity' => $price['quantity']

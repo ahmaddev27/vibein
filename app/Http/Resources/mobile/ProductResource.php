@@ -22,33 +22,24 @@ class ProductResource extends JsonResource
 
 
             'images' => $this->images?->map(function ($image) {
-                return [
-                    $image->image,
-                ];
-            }),
+                return
+                    url('storage/' . $image->image);
 
-            'categories' => $this->categories?->map(function ($category) use ($request) {
-                // تحقق إذا كانت هناك ترجمة موجودة
-                $translation = $category?->CategoryTranslations->first();
-
-                return [
-                    $translation ? $translation->name : '',
-                ];
             }),
 
 
+            'category' => new CategoryResource($this->categories->first()), // استخدام الاسم إذا كان موجودًا
+            'brand' => new BrandResource($this->Brand), // استخدام الاسم إذا كان موجودًا
 
 
             'prices' => collect($this->productVariants?->first()?->prices)->map(function ($variant) {
                 return [
+                    'id' => $variant['id'] ?? null,  // Mapping the weight
                     'weight' => $variant['weight'],  // Mapping the weight
                     'price' => $variant['price'],    // Mapping the price
-                    'quantity' => $variant['quantity']??null,    // Mapping the quantity
+                    'quantity' => $variant['quantity'] ?? null,    // Mapping the quantity
                 ];
             }) ?: [],  // إرجاع مصفوفة فارغة إذا لم تكن هناك أي أسعار
-
-            'brand' => $this->Brand?->brandTranslation->first()->name ?? null,
-
 
 
         ];

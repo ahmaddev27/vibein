@@ -18,10 +18,14 @@ class AdminResources extends JsonResource
 
         return [
             'id' => $this->id,
-            'fullName' => $this->fullName,
+            'accountId'=>$this->account->id,
+            'userId' => $this->id,
+            'fullName' => $this->account->fullName,
             'email' => $this->email,
+            'profileImage' => $this->account->profileImage,
         ];
     }
+
 
 
 }

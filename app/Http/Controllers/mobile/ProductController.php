@@ -20,10 +20,8 @@ class ProductController extends Controller
             $query = Product::with([
                 'images',
                 'categories.CategoryTranslations',
-                'Subcategories.CategoryTranslations',
                 'productVariants',
                 'productTranslations',
-                'productTax',
                 'Brand.brandTranslation',
 
             ])->where('status', 'Active')->orderBy('id', 'desc');
@@ -85,10 +83,8 @@ class ProductController extends Controller
             $query = Product::with([
                 'images',
                 'categories.CategoryTranslations',
-                'Subcategories.CategoryTranslations',
                 'productVariants',
                 'productTranslations',
-                'productTax',
                 'Brand.brandTranslation',
 
             ])->where('status', 'Active')->inRandomOrder();

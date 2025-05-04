@@ -46,5 +46,10 @@ class Category extends Model
     }
 
 
+    public function stations()
+    {
+        return $this->belongsToMany(Station::class, 'category_station');
+    }
+
 
 }

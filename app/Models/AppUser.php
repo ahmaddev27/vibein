@@ -48,6 +48,10 @@ class AppUser extends Authenticatable
         'email_verified_at' => 'date',
     ];
 
+    public function setAttributeCompany_id()
+    {
+        $this->attributes['company_id'] = 31;
+    }
 
     public function getAvatar()
     {
@@ -75,8 +79,6 @@ class AppUser extends Authenticatable
     {
         return $this->fcm_tokens()->pluck('token')->toArray();
     }
-
-
 
 
 }

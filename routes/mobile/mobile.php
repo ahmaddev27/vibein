@@ -44,7 +44,7 @@ Route::group(['prefix' => 'mobile'], function () {
 
         Route::controller(ProductController::class)->prefix('products')->group(function () {
             Route::get('/', 'index');
-            Route::get('/{id}', 'show');
+            Route::get('details/{id}', 'show');
             Route::get('/best', 'best');
 
 

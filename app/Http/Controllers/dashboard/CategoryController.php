@@ -17,46 +17,38 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-
-
         try {
-            $categories = Category::where('parentCategoryId', null)->withCount('products')->with(['CategoryTranslations']);
+            $categories = Category::select('id',  'showStatus') // تحديد الأعمدة فقط
+            ->whereNull('parentCategoryId')
+                ->withCount('products')
+                ->with('CategoryTranslations');
 
-
-            if ($request->has('status')) {
+            if ($request->filled('status')) {
                 $categories->where('showStatus', $request->status);
             }
 
-            if ($request->has('search')) {
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $search_by = $request->get('search_by', 'name');
 
-                    $search = $request->search;
-                    $search_by = $request->get('search_by', 'name');
-                    $categories->whereHas('CategoryTranslations', function ($q) use ($search, $search_by) {
-                        $q->where($search_by, 'like', "%{$search}%");
-                    });
-
+                $categories->whereHas('CategoryTranslations', function ($q) use ($search, $search_by) {
+                    $q->where($search_by, 'like', "%{$search}%");
+                });
             }
 
+            // Sorting
+            $allowedSortFields = ['created_at', 'name', 'products_count'];
+            $sortField = in_array($request->get('sort_by'), $allowedSortFields) ? $request->get('sort_by') : 'createdAt';
+            $sortDirection = in_array(strtolower($request->get('sort_dir')), ['asc', 'desc']) ? $request->get('sort_dir') : 'desc';
 
-
-
-
-            // Apply sorting
-            $sortField = $request->get('sort_by', 'createdAt');
-            $sortDirection = $request->get('sort_dir', 'desc');
             $categories->orderBy($sortField, $sortDirection);
 
-
-            $perPage = $request->input('per_page', 10);
+            // Pagination
+            $perPage = (int)$request->input('per_page', 10);
             $paginator = $categories->paginate($perPage);
 
             if ($paginator->isEmpty()) {
-                return $this->apiRespose(
-                    null,
-                    'No Categories found',
-                    true,
-                    200
-                );
+                return $this->apiRespose(null, 'No Categories found', true, 200);
             }
 
             return $this->ApiResponsePaginationTrait(
@@ -66,7 +58,6 @@ class CategoryController extends Controller
                 200
             );
         } catch (\Exception $e) {
-            // Log the error with stack trace
             Log::error('Categories index error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'request' => $request->all(),

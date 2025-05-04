@@ -177,7 +177,7 @@ class AuthController extends Controller
     }
 
 
-    public function test()
+    public function logout()
     {
 
         Auth::user()->tokens()->delete();

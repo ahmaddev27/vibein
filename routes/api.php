@@ -20,23 +20,6 @@ Route::get('/categories', function () {
 });
 
 
-//Route::get('/menu', function () {
-//    return [
-//        'data' => \App\Models\AppMenu::where('appGroupId', 12)
-//            ->where('appId', 3)
-//            ->orderBy('parentId', 'desc')
-//            ->orderBy('id', 'asc')
-//            ->get(),
-//        'status' => true,
-//        'code' => 200,
-//        'message' => 'success',
-//    ];
-//
-//
-//});
-
-
-
 
 require __DIR__ . '/dashboard/dashboard.php';
 require __DIR__ . '/mobile/mobile.php';

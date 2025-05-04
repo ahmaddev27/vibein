@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Machine extends Model
 {
@@ -26,5 +27,13 @@ class Machine extends Model
     {
         return $this->belongsTo(Category::class, 'category_id');
     }
+
+
+    public function station(): BelongsToMany
+    {
+        return $this->belongsToMany(Station::class, 'stationMachines', 'package_id', 'station_id');
+    }
+
+
 
 }

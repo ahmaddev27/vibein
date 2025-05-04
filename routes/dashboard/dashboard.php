@@ -3,31 +3,26 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\dashboard\ProductController;
 use App\Http\Controllers\dashboard\CategoryController;
+use App\Http\Controllers\dashboard\AdminAuthController;
 use App\Http\Controllers\dashboard\MenuController;
 use App\Http\Controllers\dashboard\BrandController;
 use App\Http\Controllers\dashboard\PackageController;
 use App\Http\Controllers\dashboard\MachineController;
+use App\Http\Controllers\dashboard\StationsController;
 use App\Http\Controllers\dashboard\Settings\App\SliderController;
 use App\Http\Controllers\dashboard\Settings\App\OnboardingController;
 
-//<!--Route::middleware('auth:admin')->group(function () {-->
-//<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
-//<!--Route::resource('categories', CategoryController::class)->except('show');-->
-//<!--Route::controller(CategoryController::class)->group(function () {-->
-//<!--Route::get('categories/details/{id}','details')->name('categories.details');-->
-//<!--Route::get('categories/list',  'list')->name('categories.list');-->
-//<!--});-->
 
 Route::prefix('admin')->group(function () {
 
 
-//    Route::controller(AdminAuthController::class)->group(function () {
-//        Route::post('login', 'login');
-//        Route::middleware('auth:admin-api')->group(function () {
-//            Route::post('/logout', 'logout');
-//            Route::get('/profile', 'profile');
-//        });
-//    });
+    Route::controller(AdminAuthController::class)->group(function () {
+        Route::post('login', 'login');
+        Route::middleware('auth:admin-api')->group(function () {
+            Route::post('/logout', 'logout');
+            Route::get('/profile', 'profile');
+        });
+    });
 
     // Menu Routes
     Route::controller(MenuController::class)->group(function () {
@@ -69,6 +64,14 @@ Route::prefix('admin')->group(function () {
         Route::post('/{id}', 'update')->name('update');
         Route::delete('/images/{id}', 'deleteImage');
     });
+
+    Route::apiResource('stations', StationsController::class)->except(['update']);
+    Route::prefix('stations')->controller(StationsController::class)->group(function () {
+        Route::post('/{id}', 'update')->name('update');
+        Route::delete('/images/{id}', 'deleteImage');
+    });
+
+
 
 
     Route::apiResource('sliders', SliderController::class)->except(['update']);

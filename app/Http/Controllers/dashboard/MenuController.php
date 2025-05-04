@@ -4,7 +4,9 @@ namespace App\Http\Controllers\dashboard;
 
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\AppMenu;
+use Illuminate\Support\Facades\Hash;
 
 
 class MenuController extends Controller
@@ -13,11 +15,11 @@ class MenuController extends Controller
 
     public function crmMenu()
     {
+
+
         $menu = AppMenu::where('parentId', null)->with(['children' => function ($query) {
             $query->with('children');
         }])->get()->toArray();
-
-
 
 
         return $this->apiRespose(
