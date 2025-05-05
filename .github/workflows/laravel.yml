@@ -39,12 +39,13 @@ jobs:
           composer dump-autoload --optimize --no-scripts
 
       # 3.5 Run Laravel Tests (with testing environment)
-      - name: 🧪 Run Laravel Tests
+      - name: 🧪 Run Laravel Tests (PHPUnit directly)
         run: |
-          php artisan config:clear
+          composer install --no-interaction --prefer-dist  # Allow dev packages like phpunit
           php artisan key:generate --env=testing
           php artisan migrate --env=testing --force
-          php artisan test --env=testing --no-interaction
+          vendor/bin/phpunit --env=testing
+
 
           # 4. Frontend assets (conditional)
       - name: 🛠️ Check for Frontend
