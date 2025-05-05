@@ -38,7 +38,15 @@ jobs:
           composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
           composer dump-autoload --optimize --no-scripts
 
-      # 4. Frontend assets (conditional)
+      # 3.5 Run Laravel Tests (with testing environment)
+      - name: 🧪 Run Laravel Tests
+        run: |
+          php artisan config:clear
+          php artisan key:generate --env=testing
+          php artisan migrate --env=testing --force
+          php artisan test --env=testing --no-interaction
+
+          # 4. Frontend assets (conditional)
       - name: 🛠️ Check for Frontend
         id: check_frontend
         run: |
