@@ -45,7 +45,7 @@ jobs:
           php artisan key:generate --env=testing
           php artisan migrate --env=testing --force
           APP_ENV=testing vendor/bin/phpunit
-          
+
 
 
           # 4. Frontend assets (conditional)
@@ -73,11 +73,14 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT || '21' }}
           protocol: ftps
-          security: loose  # Changed from "strict" to "loose" to fix certificate issue
+          security: loose
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
+          passive: true
+          concurrency: 2
+          retry-attempts: 3
           exclude: |
             .git/
             .github/
@@ -93,7 +96,7 @@ jobs:
             package*.json
             composer.*
             phpunit.xml
-
+      
       # 6. Post-deployment verification
       - name: ✅ Verify Deployment
         run: |
