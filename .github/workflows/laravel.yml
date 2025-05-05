@@ -13,7 +13,7 @@ jobs:
     if: contains(github.event.head_commit.message, 'deploy')
     name: 🛡️ Stable Deployment
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Prevent hanging on connection issues
+    timeout-minutes: 30
 
     steps:
       # 1. Checkout code
@@ -31,24 +31,19 @@ jobs:
           ini-values: memory_limit=512M, max_execution_time=300
           coverage: none
 
-      # 3. Install dependencies (optimized for production)
-      - name: 📦 Composer Install
-        run: |
-          composer validate
-          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
-          composer dump-autoload --optimize --no-scripts
+      # 3. Install Composer dependencies (with dev for tests)
+      - name: 📦 Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
 
-      # 3.5 Run Laravel Tests (with testing environment)
-      - name: 🧪 Run Laravel Tests (PHPUnit directly with testing env)
+      # 4. Setup environment and run tests
+      - name: 🧪 Run Laravel Tests
         run: |
-          composer install --no-interaction --prefer-dist
+          cp .env.testing .env
           php artisan key:generate --env=testing
-          php artisan migrate --env=testing --force
+          php artisan migrate --force --env=testing
           APP_ENV=testing vendor/bin/phpunit
 
-
-
-          # 4. Frontend assets (conditional)
+      # 5. Check for frontend build (optional)
       - name: 🛠️ Check for Frontend
         id: check_frontend
         run: |
@@ -64,7 +59,7 @@ jobs:
           npm ci --silent
           npm run build --silent
 
-      # 5. Deployment (with FTPS and retry logic)
+      # 6. Deploy to cPanel using FTP
       - name: 🚀 Deploy to Server
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
@@ -74,31 +69,34 @@ jobs:
           port: ${{ secrets.FTP_PORT || '21' }}
           protocol: ftps
           security: loose
-          local-dir: ./
+          passive: true
+          concurrency: 1
+          retry-attempts: 5
+          local-dir: ./  # أو غيّره إلى dist/ أو public/ لو كنت تبني مجلد ثابت
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
-          passive: true
-          concurrency: 2
-          retry-attempts: 3
           exclude: |
             .git/
             .github/
             .idea/
             node_modules/
+            vendor/
+            storage/
             tests/
-            *.md
-            *.sqlite
-            *.log
+            bootstrap/cache/
             .env*
             docker-compose*
             vite.config.js
+            webpack.mix.js
             package*.json
             composer.*
             phpunit.xml
-      
-      # 6. Post-deployment verification
-      - name: ✅ Verify Deployment
+            artisan
+            README.md
+
+      # 7. Post-deployment message
+      - name: ✅ Done
         run: |
-          echo "Deployment completed successfully at $(date)"
+          echo "🎉 Deployment complete at $(date)"
           echo "Triggered by: $GITHUB_SHA"
