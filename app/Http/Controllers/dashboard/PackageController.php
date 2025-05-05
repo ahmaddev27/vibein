@@ -5,7 +5,7 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PackageRequest;
-use App\Http\Resources\PackegeResource;
+use App\Http\Resources\PackageResource;
 use App\Models\Package;
 use App\Models\PackageImages;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class PackageController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Package::with(['products.product.productTranslations', 'alternatives.product.productTranslations', 'images'])->orderBy('id', 'desc');
+            $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
             $perPage = $request->input('per_page', 10);
             $packages = $query->paginate($perPage);
 
@@ -35,7 +35,7 @@ class PackageController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-                PackegeResource::collection($packages),
+                PackageResource::collection($packages),
                 'Packages retrieved successfully',
                 true,
                 200
@@ -60,67 +60,63 @@ class PackageController extends Controller
 
     public function store(PackageRequest $request)
     {
-
+        $data = $request->validated();
 
         DB::beginTransaction();
 
         try {
+            // 2. إنشاء السجل الرئيسي للباكيج
             $package = Package::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'price' => $request->price,
-                'total' => $request->price,
-                'status' => $request->input('status', 'Active'),
-                'tags' => $request->input('tags'),
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'total' => $data['total'] ?? 0,
+                'status' => 'Active',
+                'tags' => $data['tags'] ?? null,
             ]);
 
-            foreach ($request->input('products', []) as $product) {
-                $package->products()->create([
-                    'product_id' => $product['product_id'],
-                    'position' => $product['position'],
-                    'is_selected' => $product['is_selected'],
-                ]);
-            }
-
-
-            $addOnTotal = 0;
-            foreach ($request->input('alternatives', []) as $alt) {
-                $addOnTotal += floatval($alt['add_on']);
-                $package->alternatives()->create([
-                    'product_id' => $alt['product_id'],
-                    'position' => $alt['position'],
-                    'is_selected' => $alt['is_selected'],
-                    'add_on' => $alt['add_on'],
-                ]);
-            }
-
-            $package->update([
-                'total' => $package->price + $addOnTotal,
-            ]);
 
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $path = $image->store('packages', 'public');
-                    $package->images()->create([
-                        'image' => $path,
-                    ]);
+                    $package->images()->create(['image' => $path]);
                 }
             }
 
+            // 3. إضافة كل منتج داخل الباكيج
+            foreach ($data['products'] as $prod) {
+                $packageProduct = $package->products()->create([
+                    'product_id' => $prod['product_id'],
+                ]);
+
+                // 4. إضافة البدائل (الإضافات) لهذا المنتج إن وجدت
+                if (!empty($prod['alternatives'])) {
+                    foreach ($prod['alternatives'] as $alt) {
+                        $packageProduct->alternatives()->create([
+                            'product_id' => $alt['product_id'],
+                            'add_on' => $alt['add_on'], // السعر الإضافي
+                        ]);
+                    }
+                }
+            }
+
+
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Package created successfully',
-                'data' => new PackegeResource($package->load(['products.product', 'alternatives.product', 'images']))
-            ], 201);
-        } catch (\Exception $e) {
+            return $this->apiRespose(
+                new PackageResource($package),
+                'Package Created successfully',
+                true,
+                201
+            );
+
+
+        } catch (\Throwable $e) {
             DB::rollBack();
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating package',
-                'error' => $e->getMessage()
+                'message' => 'Error Creating : ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -128,7 +124,7 @@ class PackageController extends Controller
 
     public function show($id)
     {
-        $package = Package::with(['products.product.productTranslations', 'alternatives.product.productTranslations', 'images'])->find($id);
+        $package = Package::with(['products.product.productTranslations', 'images'])->find($id);
 
         if (!$package) {
             return $this->apiRespose(
@@ -140,90 +136,78 @@ class PackageController extends Controller
         }
 
         return $this->apiRespose(
-            new PackegeResource($package),
+            new PackageResource($package),
             'Package retrieved successfully',
             true,
             200
         );
     }
 
+
     public function update(PackageRequest $request, $id)
     {
+        $data = $request->validated();
 
         DB::beginTransaction();
 
         try {
-            $package = Package::find($id);
-            if (!$package) {
-                return $this->apiRespose(
-                    null,
-                    'Package not found',
-                    false,
-                    404
-                );
-            }
-
+            // 2. تحميل الباكيج الموجود وتحديثه
+            $package = Package::findOrFail($id);
             $package->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'price' => $request->price,
-                'total' => $request->price,
-                'tags' => $request->tags,
+                'name' => $data['name'],
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'],
+                'tags' => $data['tags'] ?? null,
             ]);
 
+            // 3. حذف كل المنتجات والبدائل المرتبطة بالباكيج
+            // (يمكنك تحسين الأداء بعملية diff إذا رغبت)
+            $package->products()->each(function ($pp) {
+                $pp->alternatives()->delete();
+            });
             $package->products()->delete();
-            foreach ($request->input('products', []) as $product) {
-                $package->products()->create([
-                    'product_id' => $product['product_id'],
-                    'position' => $product['position'],
-                    'is_selected' => $product['is_selected'],
-                ]);
-            }
 
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $package->images()->create([
-                        'image' => $image->store('package', 'public'),
-                    ]);
+            // 4. إعادة إنشاء المنتجات والبدائل من جديد
+            foreach ($data['products'] as $prod) {
+                $pp = $package->products()->create([
+                    'product_id' => $prod['product_id'],
+                ]);
+
+                if (!empty($prod['images'])) {
+                    foreach ($prod['images'] as $image) {
+                        $path = $image->store('packages', 'public');
+                        $pp->images()->create(['image' => $path]);
+                    }
+                }
+
+                if (!empty($prod['alternatives'])) {
+                    foreach ($prod['alternatives'] as $alt) {
+                        $pp->alternatives()->create([
+                            'product_id' => $alt['product_id'],
+                            'position' => $alt['position'] ?? null,
+                            'is_selected' => $alt['is_selected'] ?? false,
+                            'add_on' => $alt['add_on'],
+                        ]);
+                    }
                 }
             }
-
-            $addOnTotal = 0;
-            $package->alternatives()->delete();
-
-            foreach ($request->input('alternatives', []) as $alt) {
-                $addOnTotal += floatval($alt['add_on']); // accumulate add_on value
-                $package->alternatives()->create([
-                    'product_id' => $alt['product_id'],
-                    'position' => $alt['position'],
-                    'is_selected' => $alt['is_selected'],
-                    'add_on' => $alt['add_on'],
-                ]);
-            }
-
-            // Now update the total
-            $package->update([
-                'total' => $package->price + $addOnTotal,
-            ]);
 
             DB::commit();
 
             return $this->apiRespose(
-                new PackegeResource($package),
+                new PackageResource($package->load('products.alternatives')),
                 'Package updated successfully',
                 true,
                 200
             );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->apiRespose(
-                null,
-                'Error updating package',
-                false,
-                500
-            );
-        }
 
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Error Updating: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
 
@@ -290,50 +274,6 @@ class PackageController extends Controller
             200
         );
 
-    }
-
-
-    public function customize(Request $request, Package $package)
-    {
-
-
-        $request->validate([
-            'position' => 'required|integer|min:1',
-            'product_alternative_id' => 'required|exists:package_product_alternatives,id',
-        ]);
-
-        try {
-            $result = $package->toggleSelectedProduct(
-                $request->position,
-                $request->product_alternative_id,
-            );
-
-            if ($result) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'selected product updated successfully',
-                    'data' => new PackegeResource($package->fresh(['products.product', 'alternatives.product', 'images']))
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to update selected product',
-            ], 404);
-        } catch (\Exception $e) {
-
-            Log::error('Failed to customize package product: ' . $e->getMessage(), [
-                'exception' => $e,
-                'package_id' => $package->id,
-                'position' => $request->position,
-                'product_alternative_id' => $request->product_alternative_id,
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'error',
-                'error' => $e->getMessage()
-            ], 500);
-        }
     }
 
 

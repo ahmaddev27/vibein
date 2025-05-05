@@ -47,7 +47,7 @@ class ProductController extends Controller
 
             if ($products->isEmpty()) {
                 return $this->apiRespose(
-                    null,
+                    [],
                     'No products found',
                     true,
                     200
@@ -87,7 +87,7 @@ class ProductController extends Controller
                 'productTranslations',
                 'Brand.brandTranslation',
 
-            ])->where('status', 'Active')->inRandomOrder();
+            ])->where('status', 'Active');
 
 
             $perPage = $request->input('per_page', 10);
@@ -96,7 +96,7 @@ class ProductController extends Controller
 
             if ($products->isEmpty()) {
                 return $this->ApiResponsePaginationTrait(
-                    null,
+                    [],
                     'No products found',
                     true,
                     200
@@ -144,7 +144,7 @@ class ProductController extends Controller
 
         if (!$product) {
             return $this->apiResponse(
-                null,
+                [],
                 'Product not found',
                 false,
                 404

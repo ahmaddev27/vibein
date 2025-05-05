@@ -8,21 +8,27 @@ class PackageProductAlternative extends Model
 {
     protected $table= 'package_product_alternatives';
     protected $fillable = [
-        'package_id',
+        'package_product_id',
         'product_id',
-        'position',
-        'is_selected',
         'add_on'
     ];
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
+//    public function product()
+//    {
+//        return $this->belongsTo(Product::class);
+//    }
+//
+//    public function package()
+//    {
+//        return $this->belongsTo(Package::class);
+//    }
+
+    public function baseProduct() {
+        return $this->belongsTo(PackageProduct::class, 'package_product_id');
     }
 
-    public function package()
-    {
-        return $this->belongsTo(Package::class);
+    public function addOnProduct() {
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
 }

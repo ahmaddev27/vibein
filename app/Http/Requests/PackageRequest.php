@@ -3,61 +3,46 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Http\Exceptions\HttpResponseException;
+
 class PackageRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * @return bool
      */
-    public function authorize(): bool
+    public function authorize()
     {
+        // ضبط الإذن حسب منطق التطبيق، أو اترك true للسماح للجميع
         return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, mixed>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-
             'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'products' => 'required|array',
-            'products.*.product_id' => 'required|exists:product,id',
-            'products.*.position' => 'required|integer|min:1',
-            'products.*.is_selected' => 'required|boolean',
-            'alternatives' => 'array',
-            'alternatives.*.product_id' => 'required|exists:product,id',
-            'alternatives.*.position' => 'required|integer|min:1',
-            'alternatives.*.is_selected' => 'required|boolean',
-            'alternatives.*.add_on' => 'required|numeric|min:0',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
             'tags' => 'nullable|string',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|exists:product,id',
+
+            'products.*.alternatives' => 'nullable|array',
+            'products.*.alternatives.*.product_id' => 'required_with:products.*.alternatives|exists:product,id',
+
+            'products.*.alternatives.*.add_on' => 'required_with:products.*.alternatives|numeric|min:0',
         ];
     }
 
-
-
-
-    protected function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(
-            response()->json([
-                'status' => false,
-                'code' => 422,
-                'message' => 'Validation errors',
-                'data' => null,
-                'errors' => $validator->errors(),
-
-            ], 422)
-        );
-    }
-
-
+    /**
+     * Customize the validation messages.
+     *
+     * @return array<string, string>
+     */
 
 }

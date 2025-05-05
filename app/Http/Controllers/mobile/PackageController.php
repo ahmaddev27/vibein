@@ -5,7 +5,7 @@ namespace App\Http\Controllers\mobile;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\mobile\ProductResource;
-use App\Http\Resources\PackegeResource;
+use App\Http\Resources\PackageResource;
 use App\Models\Package;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ class PackageController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Package::with(['products.product.productTranslations', 'alternatives.product.productTranslations', 'images'])->orderBy('id', 'desc');
+            $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
 
 
             if ($request->filled('search')) {
@@ -44,7 +44,7 @@ class PackageController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-                PackegeResource::collection($packages),
+                PackageResource::collection($packages),
                 'Packages retrieved successfully',
                 true,
                 200
@@ -68,7 +68,8 @@ class PackageController extends Controller
 
     public function show($id)
     {
-        $package = Package::with(['products.product.productTranslations', 'alternatives.product.productTranslations', 'images'])->find($id);
+
+        $package = Package::with(['products.product.productTranslations', 'images'])->find($id);
 
         if (!$package) {
             return $this->apiRespose(
@@ -80,7 +81,7 @@ class PackageController extends Controller
         }
 
         return $this->apiRespose(
-            new PackegeResource($package),
+            new PackageResource($package),
             'Package retrieved successfully',
             true,
             200

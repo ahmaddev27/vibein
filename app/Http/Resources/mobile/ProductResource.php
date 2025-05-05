@@ -28,8 +28,8 @@ class ProductResource extends JsonResource
             }),
 
 
-            'category' => new CategoryResource($this->categories->first()), // استخدام الاسم إذا كان موجودًا
-            'brand' => new BrandResource($this->Brand), // استخدام الاسم إذا كان موجودًا
+            'category' => new CategoryResource($this->categories->first()),
+            'brand' => new BrandResource($this->Brand),
 
 
             'prices' => collect($this->productVariants?->first()?->prices)->map(function ($variant) {

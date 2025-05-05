@@ -12,8 +12,6 @@ class PackageProduct extends Model
     protected $fillable = [
         'package_id',
         'product_id',
-        'position',
-        'is_selected',
     ];
 
     public function product()
@@ -24,6 +22,12 @@ class PackageProduct extends Model
     public function package()
     {
         return $this->belongsTo(Package::class);
+    }
+
+
+
+    public function alternatives() {
+        return $this->hasMany(PackageProductAlternative::class);
     }
 
 }

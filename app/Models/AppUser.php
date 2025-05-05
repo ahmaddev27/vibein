@@ -80,5 +80,10 @@ class AppUser extends Authenticatable
         return $this->fcm_tokens()->pluck('token')->toArray();
     }
 
+    public function address()
+    {
+
+        return $this->hasMany(AppUserAddress::class, 'user_id');
+    }
 
 }

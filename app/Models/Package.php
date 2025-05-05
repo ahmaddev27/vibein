@@ -42,45 +42,6 @@ class Package extends Model
     }
 
 
-    public function toggleSelectedProduct(int $position, int $productAlternativeId): bool
-    {
-        DB::beginTransaction();
-
-        try {
-            $this->products()
-                ->where('position', $position)
-                ->update(['is_selected' => false]);
-
-            $this->alternatives()
-                ->where('position', $position)
-                ->update(['is_selected' => false]);
-
-            // Log matching alternative
-            $alternative = $this->alternatives()
-                ->where('position', $position)
-                ->where('product_id', $productAlternativeId)
-                ->first();
-
-            if (!$alternative) {
-                Log::warning("No matching alternative found", [
-                    'package_id' => $this->id,
-                    'position' => $position,
-                    'product_alternative_id' => $productAlternativeId,
-                ]);
-            }
-
-            $affected = $this->alternatives()
-                ->where('position', $position)
-                ->where('id', $productAlternativeId)
-                ->update(['is_selected' => true]);
-
-            DB::commit();
-            return $affected > 0;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
 
 
 

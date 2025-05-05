@@ -5,6 +5,7 @@ use App\Http\Controllers\mobile\AuthController;
 use App\Http\Controllers\mobile\HomeController;
 use App\Http\Controllers\mobile\ProductController;
 use App\Http\Controllers\mobile\PackageController;
+use App\Http\Controllers\mobile\AddressController;
 
 //<!--Route::middleware('auth:admin')->group(function () {-->
 //<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
@@ -47,12 +48,17 @@ Route::group(['prefix' => 'mobile'], function () {
             Route::get('details/{id}', 'show');
             Route::get('/best', 'best');
 
-
         });
 
         Route::controller(PackageController::class)->prefix('packages')->group(function () {
             Route::get('/', 'index');
             Route::get('/{id}', 'show');
+        });
+
+        Route::apiResource('address',AddressController ::class)->except('update');
+        Route::prefix('address')->controller(AddressController::class)->group(function () {
+            Route::post('/{id}', 'update');
+            Route::post('/setDefault/{id}', 'setDefault');
         });
     });
 
