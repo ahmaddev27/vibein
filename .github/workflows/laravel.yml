@@ -69,10 +69,7 @@ jobs:
           port: ${{ secrets.FTP_PORT || '21' }}
           protocol: ftps
           security: loose
-          passive: true
-          concurrency: 1
-          retry-attempts: 5
-          local-dir: ./  # أو غيّره إلى dist/ أو public/ لو كنت تبني مجلد ثابت
+          local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
@@ -94,6 +91,7 @@ jobs:
             phpunit.xml
             artisan
             README.md
+      
 
       # 7. Post-deployment message
       - name: ✅ Done
