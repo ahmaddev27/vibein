@@ -66,9 +66,9 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || '21' }}
-          protocol: ftps
+          protocol: ftp
           security: loose
+          passive: true
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
@@ -92,6 +92,7 @@ jobs:
             artisan
             README.md
       
+
 
       # 7. Post-deployment message
       - name: ✅ Done
