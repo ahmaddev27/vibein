@@ -2,7 +2,7 @@ name: 🚀 Laravel cPanel Deployment (Stable)
 
 on:
   push:
-    branches: [ main,master ]
+    branches: [ main ]
     paths-ignore:
       - 'README.md'
       - '.gitignore'
