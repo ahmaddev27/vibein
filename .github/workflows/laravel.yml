@@ -61,27 +61,31 @@ jobs:
 
       # 6. Deploy to cPanel using FTP
       - name: 🚀 Deploy to Server
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT || '21' }}
-          protocol: ftp  # Use plain FTP instead of FTPS
+          protocol: ftp
           security: loose
+          passive: true
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
+          auto-confirm: true
+          retries: 3
+          retry-wait: 5000
           exclude: |
-            .git/
-            .github/
-            .idea/
-            node_modules/
-            vendor/
-            storage/
-            tests/
-            bootstrap/cache/
+            **/.git/**
+            **/.github/**
+            **/.idea/**
+            **/node_modules/**
+            **/vendor/**
+            **/storage/**
+            **/tests/**
+            **/bootstrap/cache/**
             .env*
             docker-compose*
             vite.config.js
@@ -91,7 +95,6 @@ jobs:
             phpunit.xml
             artisan
             README.md
-      
 
 
       # 7. Post-deployment message
