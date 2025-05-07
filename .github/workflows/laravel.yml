@@ -66,9 +66,9 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
+          port: ${{ secrets.FTP_PORT || '21' }}
+          protocol: ftp  # Use plain FTP instead of FTPS
           security: loose
-          passive: true
           local-dir: ./
           server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
