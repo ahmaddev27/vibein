@@ -23,16 +23,9 @@ class Brand extends Model
     protected static function booted()
     {
         static::addGlobalScope('company', function (Builder $builder) {
-            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31)); // 1 كقيمة افتراضية
-        });
-
-        static::saving(function ($model) {
-            if (empty($model->companyId)) {
-                $model->companyId = env('DEFAULT_COMPANY_ID', 31);
-            }
+            $builder->where('companyId', 31);
         });
     }
-
 
     // Custom timestamp column names
     const CREATED_AT = 'createdAt';
