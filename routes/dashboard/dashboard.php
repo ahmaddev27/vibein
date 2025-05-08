@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\dashboard\ProductController;
 use App\Http\Controllers\dashboard\CategoryController;
-use App\Http\Controllers\dashboard\AdminAuthController;
+use App\Http\Controllers\dashboard\CompanyAuthController;
 use App\Http\Controllers\dashboard\MenuController;
 use App\Http\Controllers\dashboard\BrandController;
 use App\Http\Controllers\dashboard\PackageController;
@@ -16,7 +16,7 @@ use App\Http\Controllers\dashboard\Settings\App\OnboardingController;
 Route::prefix('admin')->group(function () {
 
 
-    Route::controller(AdminAuthController::class)->group(function () {
+    Route::controller(CompanyAuthController::class)->group(function () {
         Route::post('login', 'login');
         Route::middleware('auth:admin-api')->group(function () {
             Route::post('/logout', 'logout');
@@ -70,8 +70,6 @@ Route::prefix('admin')->group(function () {
         Route::post('/{id}', 'update')->name('update');
         Route::delete('/images/{id}', 'deleteImage');
     });
-
-
 
 
     Route::apiResource('sliders', SliderController::class)->except(['update']);

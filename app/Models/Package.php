@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
@@ -13,7 +12,6 @@ class Package extends Model
 {
 
     protected $table = 'packages';
-
 
     protected $fillable = [
         'name',
@@ -24,6 +22,20 @@ class Package extends Model
         'tags'
 
     ];
+
+
+    protected static function booted()
+    {
+        static::addGlobalScope('company', function (Builder $builder) {
+            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31)); // 1 كقيمة افتراضية
+        });
+
+        static::saving(function ($model) {
+            if (empty($model->companyId)) {
+                $model->companyId = env('DEFAULT_COMPANY_ID', 31);
+            }
+        });
+    }
 
 
     public function products(): HasMany
@@ -42,15 +54,10 @@ class Package extends Model
     }
 
 
-
-
-
     public function station(): BelongsToMany
     {
         return $this->belongsToMany(Station::class, 'stationPackages', 'package_id', 'station_id');
     }
-
-
 
 
 }

@@ -90,7 +90,7 @@ return [
         ],
         'companies' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Company::class,
+            'model' => App\Models\DashboardUser::class,
         ],
         'app_users' => [
             'driver' => 'eloquent',

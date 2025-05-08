@@ -20,10 +20,27 @@ class PackageController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
+            $query = Package::with(['products.product.productTranslations', 'images']);
             $perPage = $request->input('per_page', 10);
             $packages = $query->paginate($perPage);
 
+
+            if ($request->has('search')) {
+                $search = $request->input('search');
+                $packages = $query->where(function ($q) use ($search) {
+                    $q->where('name', 'LIKE', "%$search%")
+                        ->orWhere('description', 'LIKE', "%$search%");
+                })->paginate($perPage);
+            }
+
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $sortField = $request->get('sort_by', 'createdAt');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $query->orderBy($sortField, $sortDirection);
 
             if ($packages->isEmpty()) {
                 return $this->apiRespose(
@@ -125,6 +142,7 @@ class PackageController extends Controller
     public function show($id)
     {
         $package = Package::with(['products.product.productTranslations', 'images'])->find($id);
+
 
         if (!$package) {
             return $this->apiRespose(

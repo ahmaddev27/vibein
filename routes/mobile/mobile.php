@@ -7,14 +7,6 @@ use App\Http\Controllers\mobile\ProductController;
 use App\Http\Controllers\mobile\PackageController;
 use App\Http\Controllers\mobile\AddressController;
 
-//<!--Route::middleware('auth:admin')->group(function () {-->
-//<!--Route::get('dashboard', function () {return view('admin.dashboard');})->name('dashboard');-->
-//<!--Route::resource('categories', CategoryController::class)->except('show');-->
-//<!--Route::controller(CategoryController::class)->group(function () {-->
-//<!--Route::get('categories/details/{id}','details')->name('categories.details');-->
-//<!--Route::get('categories/list',  'list')->name('categories.list');-->
-//<!--});-->
-
 
 Route::group(['prefix' => 'mobile'], function () {
 
@@ -55,7 +47,7 @@ Route::group(['prefix' => 'mobile'], function () {
             Route::get('/{id}', 'show');
         });
 
-        Route::apiResource('address',AddressController ::class)->except('update');
+        Route::apiResource('address', AddressController ::class)->except('update');
         Route::prefix('address')->controller(AddressController::class)->group(function () {
             Route::post('/{id}', 'update');
             Route::post('/setDefault/{id}', 'setDefault');
