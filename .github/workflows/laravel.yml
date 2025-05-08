@@ -26,8 +26,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT || '21' }}
-          server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
-          # باقي الإعدادات كما هي
 
   # Development Deploy (dev)
   development-deploy:
@@ -82,16 +80,11 @@ jobs:
           username: ${{ secrets.FTP_DEV_USERNAME }}
           password: ${{ secrets.FTP_DEV_PASSWORD }}
           port: ${{ secrets.FTP_DEV_PORT || '21' }}
-          server-dir: ${{ secrets.FTP_DEV_REMOTE_DIR || '/' }}
           protocol: ftp
           security: loose
-          passive: true
           local-dir: ./
           log-level: verbose
           dangerous-clean-slate: false
-          auto-confirm: true
-          retries: 3
-          retry-wait: 5000
           exclude: |
             **/.git/**
             **/.github/**
