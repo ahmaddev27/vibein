@@ -8,29 +8,99 @@ on:
       - '.gitignore'
       - '.env.example'
 
+env:
+  COMPOSER_PROCESS_TIMEOUT: 0
+  COMPOSER_NO_INTERACTION: 1
+  COMPOSER_NO_AUDIT: 1
+
 jobs:
-  # Production Deploy (main)
+
+  # Production Deployment (main branch)
   production-deploy:
     if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, 'deploy')
-    name: 🛡️ Stable Deployment
+    name: 🛡️ Production Deployment
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
-      # [نفس خطوات الإنتاج السابقة تماماً]
-      # ...
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, ctype, fileinfo, openssl, pdo, tokenizer, xml
+          ini-values: memory_limit=512M, max_execution_time=300
+          coverage: none
+
+      - name: 📦 Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: 🧪 Run Laravel Tests
+        run: |
+          cp .env.testing .env
+          php artisan key:generate --env=testing
+          php artisan migrate --force --env=testing
+          APP_ENV=testing vendor/bin/phpunit
+
+      - name: 🛠️ Check for Frontend
+        id: check_frontend
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "has_frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_frontend=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🏗️ Build Assets
+        if: steps.check_frontend.outputs.has_frontend == 'true'
+        run: |
+          npm ci --silent
+          npm run build --silent
+
       - name: 🚀 Deploy to Production Server
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || '21' }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          security: loose
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
+          log-level: verbose
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git/**
+            **/.github/**
+            **/.idea/**
+            **/node_modules/**
+            **/vendor/**
+            **/storage/**
+            **/tests/**
+            **/bootstrap/cache/**
+            .env*
+            docker-compose*
+            vite.config.js
+            webpack.mix.js
+            package*.json
+            composer.*
+            phpunit.xml
+            artisan
+            README.md
 
-  # Development Deploy (dev)
+      - name: ✅ Done
+        run: echo "✅ Production deployment complete at $(date)"
+
+
+  # Development Deployment (dev branch)
   development-deploy:
     if: github.ref == 'refs/heads/dev' && contains(github.event.head_commit.message, 'deploy')
-    name: ⚙️ Dev Deployment
+    name: ⚙️ Development Deployment
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -79,10 +149,11 @@ jobs:
           server: ${{ secrets.FTP_DEV_HOST }}
           username: ${{ secrets.FTP_DEV_USERNAME }}
           password: ${{ secrets.FTP_DEV_PASSWORD }}
-          port: 21
+          port: ${{ secrets.FTP_DEV_PORT }}
           protocol: ftp
           security: loose
           local-dir: ./
+          server-dir: ${{ secrets.FTP_DEV_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
@@ -105,5 +176,4 @@ jobs:
             README.md
 
       - name: ✅ Done
-        run: |
-          echo "✅ Dev Deployment complete at $(date)"
+        run: echo "✅ Development deployment complete at $(date)"
