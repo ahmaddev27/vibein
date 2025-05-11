@@ -15,8 +15,6 @@ class MenuController extends Controller
 
     public function crmMenu()
     {
-
-
         $menu = AppMenu::where('parentId', null)->with(['children' => function ($query) {
             $query->with('children');
         }])->get()->toArray();
