@@ -27,7 +27,7 @@ class Package extends Model
     protected static function booted()
     {
         static::addGlobalScope('company', function (Builder $builder) {
-            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31)); // 1 كقيمة افتراضية
+            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31)); 
         });
 
         static::saving(function ($model) {
