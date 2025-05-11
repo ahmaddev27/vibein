@@ -22,7 +22,7 @@ class PackageController extends Controller
         try {
             $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
             $perPage = $request->input('per_page', 10);
-            $packages = $query->paginate($perPage);
+            $packages = $query->paginate($perPage); 
 
 
             if ($packages->isEmpty()) {
