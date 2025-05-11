@@ -21,7 +21,7 @@ class Package extends Model
         'price',
         'total',
         'status',
-        'tags'
+        'tags',
 
     ];
 
