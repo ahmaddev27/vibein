@@ -14,5 +14,6 @@ class ProductImages extends Model
     ];
 
 
+
 }
 

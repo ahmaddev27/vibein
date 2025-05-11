@@ -23,6 +23,7 @@ class PackageResource extends JsonResource
             'status'      => $this->status,
             'tags'        => $this->tags,
             'products'    => $this->products->map(function ($packageProduct) {
+                // المنتج الأساسي
                 $prod = $packageProduct->product;
 
                 return [
@@ -40,7 +41,6 @@ class PackageResource extends JsonResource
                     }),
                 ];
             }),
-
             'images' => $this->images->map(function ($image) {
                 return [
                     'id'    => $image->id,
