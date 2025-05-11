@@ -65,7 +65,6 @@ jobs:
           protocol: ftp
           security: loose
           local-dir: ./
-          server-dir: ${{ secrets.FTP_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
@@ -148,7 +147,6 @@ jobs:
           protocol: ftp
           security: loose
           local-dir: ./
-          server-dir: ${{ secrets.FTP_DEV_REMOTE_DIR || '/' }}
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
