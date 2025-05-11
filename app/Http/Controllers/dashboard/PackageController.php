@@ -231,9 +231,7 @@ class PackageController extends Controller
 
     public function destroy($id)
     {
-
-        $package = Package::find($id);
-
+        $package = Package::with('products.alternatives', 'images')->find($id);
 
         if (!$package) {
             return $this->apiRespose(
@@ -244,17 +242,21 @@ class PackageController extends Controller
             );
         }
 
-        if ($package->images) {
-            foreach ($package->images as $image) {
-
-                if ($image->image) {
-                    Storage::disk('public')->delete($image->image);
-                }
-
-                $image->delete();
+        // Delete package product alternatives
+        foreach ($package->products as $product) {
+            foreach ($product->alternatives as $alternative) {
+                $alternative->delete();
             }
+            $product->delete(); // Delete product after its alternatives
         }
 
+        // Delete package images
+        foreach ($package->images as $image) {
+            if ($image->image) {
+                Storage::disk('public')->delete($image->image);
+            }
+            $image->delete();
+        }
 
         $package->delete();
 
