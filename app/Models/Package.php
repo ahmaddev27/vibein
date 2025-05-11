@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ class Package extends Model
     protected static function booted()
     {
         static::addGlobalScope('company', function (Builder $builder) {
-            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31)); 
+            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31));
         });
 
         static::saving(function ($model) {

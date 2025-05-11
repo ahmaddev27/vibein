@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -48,9 +49,17 @@ class AppUser extends Authenticatable
         'email_verified_at' => 'date',
     ];
 
-    public function setAttributeCompany_id()
+    protected static function booted()
     {
-        $this->attributes['company_id'] = 31;
+        static::addGlobalScope('company', function (Builder $builder) {
+            $builder->where('companyId', env('DEFAULT_COMPANY_ID', 31));
+        });
+
+        static::saving(function ($model) {
+            if (empty($model->companyId)) {
+                $model->companyId = env('DEFAULT_COMPANY_ID', 31);
+            }
+        });
     }
 
     public function getAvatar()
