@@ -22,7 +22,7 @@ class PackageController extends Controller
         try {
             $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
             $perPage = $request->input('per_page', 10);
-            $packages = $query->paginate($perPage); 
+            $packages = $query->paginate($perPage);
 
 
             if ($packages->isEmpty()) {
@@ -224,12 +224,11 @@ class PackageController extends Controller
             );
         }
 
-        // Delete package product alternatives
         foreach ($package->products as $product) {
             foreach ($product->alternatives as $alternative) {
                 $alternative->delete();
             }
-            $product->delete(); // Delete product after its alternatives
+            $product->delete();
         }
 
         // Delete package images
