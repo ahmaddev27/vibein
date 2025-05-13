@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 
 class Product extends Model
@@ -14,7 +15,7 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'product';
-    protected $fillable=[
+    protected $fillable = [
         'status',
         'lable',
         'companyId',
@@ -39,6 +40,24 @@ class Product extends Model
                 $model->companyId = env('DEFAULT_COMPANY_ID', 31);
             }
         });
+
+
+        static::deleting(function ($product) {
+            PackageProductAlternative::where('product_id', $product->id)->delete();
+
+            $packageProducts = PackageProduct::where('product_id', $product->id)->get();
+            foreach ($packageProducts as $packageProduct) {
+                $packageProduct->alternatives()->delete();
+                $packageProduct->delete();
+            }
+
+            foreach ($product->images as $image) {
+                if (Storage::disk('public')->exists($image->image)) {
+                    Storage::disk('public')->delete($image->image);
+                }
+                $image->delete();
+            }
+        });
     }
 
 
@@ -51,12 +70,12 @@ class Product extends Model
 
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class,'productCategories','productId','categoryId')->where('subCategory',false);;
+        return $this->belongsToMany(Category::class, 'productCategories', 'productId', 'categoryId')->where('subCategory', false);;
     }
 
     public function Subcategories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class,'productCategories','productId','categoryId')->where('subCategory',true);
+        return $this->belongsToMany(Category::class, 'productCategories', 'productId', 'categoryId')->where('subCategory', true);
     }
 
     public function productVariants()
@@ -79,7 +98,6 @@ class Product extends Model
     {
         return $this->belongsTo(Tax::class, 'taxId', 'id');
     }
-
 
 
     public function getLinksAttribute()

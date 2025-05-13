@@ -26,11 +26,11 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             // Category fields
-            'parentCategoryId' => [
-                'nullable',
-                'integer',
-                Rule::exists('category', 'id')->where('companyId', $this->companyId)
-            ],
+//            'parentCategoryId' => [
+//                'nullable',
+//                'integer',
+//                Rule::exists('category', 'id')->where('companyId', $this->companyId)
+//            ],
             'sortOrder' => 'nullable|integer',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'showStatus' => 'required|boolean',
@@ -52,7 +52,6 @@ class StoreCategoryRequest extends FormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'companyId' => $this->companyId ?? 31, // Default to 31 if not provided
             'showStatus' => $this->boolean('showStatus'),
             'languageCode' => 'en', // Default to 'en' if not provided
         ]);
