@@ -93,7 +93,6 @@ class ProductController extends Controller
                 'brandId' => $request->brandId,
                 'lable' => $request->label,
                 'status' => 'Active', // Default status
-                'companyId' => 31 // From global scope
             ]);
 
             // Create Translation
@@ -177,46 +176,6 @@ class ProductController extends Controller
             );
 
         });
-    }
-
-    public function destroy($id)
-    {
-        try {
-            $product = Product::findOrFail($id);
-
-            // Delete associated images (both files and database records)
-            if ($product->images) {
-                foreach ($product->images as $image) {
-                    if (Storage::disk('public')->exists($image->image)) {
-                        Storage::disk('public')->delete($image->image);
-                    }
-                    $image->delete();
-                    Cache::flush();
-                }
-            }
-
-            // Delete the product itself
-            $product->delete();
-
-            return $this->apiResponse(
-                null,
-                'Product deleted successfully',
-                true,
-                200
-            );
-        } catch (\Exception $e) {
-            Log::error('Product deletion error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'id' => $id
-            ]);
-
-            return $this->apiResponse(
-                null,
-                'Error deleting product',
-                false,
-                500
-            );
-        }
     }
 
 

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Resources\dashboard\CategoryResource;
 use App\Models\Category;
 use App\Models\CategoryTranslations;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,7 +20,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         try {
-            $categories = Category::select('id',  'showStatus') // تحديد الأعمدة فقط
+            $categories = Category::select('id', 'showStatus', 'image') // تحديد الأعمدة فقط
             ->whereNull('parentCategoryId')
                 ->withCount('products')
                 ->with('CategoryTranslations');
@@ -52,7 +54,7 @@ class CategoryController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-                $paginator,
+                CategoryResource::collection($paginator),
                 'Categories retrieved successfully',
                 true,
                 200
@@ -78,7 +80,7 @@ class CategoryController extends Controller
     {
         // Prepare category data
         $categoryData = [
-            'parentCategoryId' => $request->parentCategoryId,
+//            'parentCategoryId' => $request->parentCategoryId,
             'companyId' => $request->companyId,
             'showStatus' => $request->showStatus,
             'sortOrder' => $request->sortOrder ?? 0,
@@ -106,7 +108,7 @@ class CategoryController extends Controller
         CategoryTranslations::create($translationData);
 
         return $this->apiResponse(
-            $category->load('CategoryTranslations'),
+            new CategoryResource($category->load('CategoryTranslations')),
             'Category created successfully',
             true,
             201
@@ -127,7 +129,7 @@ class CategoryController extends Controller
             );
         }
         return $this->apiResponse(
-            $category,
+            new CategoryResource($category->load('CategoryTranslations')),
             'Category retrieved successfully',
             true,
             200
@@ -146,47 +148,60 @@ class CategoryController extends Controller
                 404
             );
         }
-        // Prepare category data
-        $categoryData = [
-            'parentCategoryId' => $request->parentCategoryId,
-            'companyId' => $request->companyId,
-            'showStatus' => $request->showStatus,
-            'sortOrder' => $request->sortOrder ?? 0,
-        ];
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
+
+        DB::beginTransaction();
+        try {
+            // Prepare category data
+            $categoryData = [
+//            'parentCategoryId' => $request->parentCategoryId,
+                'companyId' => $request->companyId,
+                'showStatus' => $request->showStatus,
+                'sortOrder' => $request->sortOrder ?? 0,
+            ];
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                if ($category->image) {
+                    Storage::disk('public')->delete($category->image);
+                }
+
+                $categoryData['image'] = $request->file('image')->store('categories', 'public');
+
             }
 
-            $categoryData['image'] = $request->file('image')->store('categories', 'public');
 
+            // Create category
+            $category->update($categoryData);
+
+            $category->CategoryTranslations()->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'metaTagTitle' => $request->metaTagTitle,
+                'metaTagDescription' => $request->metaTagDescription,
+                'metaTagKeywords' => $request->metaTagKeywords,
+                'languageCode' => $request->languageCode,
+            ]);
+
+
+            DB::commit();
+
+            return $this->apiResponse(
+                new CategoryResource($category->load('CategoryTranslations')),
+
+                'Category updated successfully',
+                true,
+                200
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->apiResponse(
+                null,
+                'Failed to update Category: ' . $e->getMessage(),
+                false,
+                500
+            );
         }
-
-
-        // Create category
-        $category = Category::create($categoryData);
-
-        // Create translation
-        $translationData = [
-            'categoryId' => $category->id,
-            'name' => $request->name,
-            'description' => $request->description,
-            'metaTagTitle' => $request->metaTagTitle,
-            'metaTagDescription' => $request->metaTagDescription,
-            'metaTagKeywords' => $request->metaTagKeywords,
-            'languageCode' => $request->languageCode,
-        ];
-
-        CategoryTranslations::create($translationData);
-
-        return $this->apiResponse(
-            $category->load('CategoryTranslations'),
-            'Category updated successfully',
-            true,
-            200
-        );
-
     }
 
     public function destroy($id)

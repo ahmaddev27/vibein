@@ -5,6 +5,7 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreBrandRequest;
+use App\Http\Resources\dashboard\BrandResource;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +55,7 @@ class BrandController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-                $brands,
+               BrandResource::collection( $brands),
                 'Brands retrieved successfully',
                 true,
                 200
@@ -123,7 +124,7 @@ class BrandController extends Controller
             DB::commit();
 
             return $this->apiResponse(
-                $brand->load('brandTranslation'),
+                new BrandResource($brand->load('brandTranslation')),
                 'Brand created successfully',
                 true,
                 201
@@ -181,7 +182,7 @@ class BrandController extends Controller
             DB::commit();
 
             return $this->apiResponse(
-                $brand->load('brandTranslation'),
+                new BrandResource($brand->load('brandTranslation')),
                 'Brand updated successfully',
                 true,
                 200

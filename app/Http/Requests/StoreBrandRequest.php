@@ -76,7 +76,6 @@ class StoreBrandRequest extends FormRequest
     public function prepareForValidation()
     {
         $this->merge([
-            'companyId' => 31, // Set the companyId to a default value
             'showStatus' => $this->showStatus ?? 1, // Default to 1 if not provided
             'languageCode' => 'en', // Default to 'en' if not provided
         ]);
