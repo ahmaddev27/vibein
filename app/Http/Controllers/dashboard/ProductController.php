@@ -347,7 +347,7 @@ class ProductController extends Controller
             }
 
             $product->delete();
-
+ 
             return $this->apiResponse(
                 null,
                 'Product deleted successfully',
