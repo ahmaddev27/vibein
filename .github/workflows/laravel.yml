@@ -83,7 +83,7 @@ jobs:
             composer.*
             phpunit.xml
             artisan
-            README.md
+            README.md 
 
       - name: ✅ Done
         run: |
