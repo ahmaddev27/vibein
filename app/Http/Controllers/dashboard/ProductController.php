@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\dashboard;
-//test on push
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
