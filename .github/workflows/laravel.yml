@@ -63,6 +63,7 @@ jobs:
           port: 21
           protocol: ftp
           security: loose
+          passive: true
           local-dir: ./
           log-level: verbose
           dangerous-clean-slate: false
@@ -83,7 +84,7 @@ jobs:
             composer.*
             phpunit.xml
             artisan
-            README.md 
+            README.md
 
       - name: ✅ Done
         run: |
@@ -145,6 +146,7 @@ jobs:
           port: 21
           protocol: ftp
           security: loose
+          passive: true
           local-dir: ./
           log-level: verbose
           dangerous-clean-slate: false
