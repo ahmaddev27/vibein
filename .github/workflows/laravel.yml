@@ -55,7 +55,7 @@ jobs:
           npm run build --silent
 
       - name: 🚀 Deploy to Production Server
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -64,6 +64,7 @@ jobs:
           protocol: ftp
           security: loose
           local-dir: ./
+          server-dir: /public_html/
           log-level: verbose
           dangerous-clean-slate: false
           exclude: |
@@ -137,7 +138,8 @@ jobs:
           npm run build --silent
 
       - name: 🚀 Deploy to Dev Server
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
+
         with:
           server: ${{ secrets.DEV_FTP_HOST }}
           username: ${{ secrets.DEV_FTP_USERNAME }}
