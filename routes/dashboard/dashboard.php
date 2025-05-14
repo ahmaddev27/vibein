@@ -41,6 +41,8 @@ Route::prefix('admin')->group(function () {
     Route::apiResource('categories', CategoryController::class)->except(['update']);
     Route::prefix('categories')->controller(CategoryController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
+        Route::delete('/images/{id}', 'deleteImage');
+
     });
 
 // Brand Routes
@@ -48,6 +50,8 @@ Route::prefix('admin')->group(function () {
     Route::apiResource('brands', BrandController::class)->except(['update']);
     Route::prefix('brands')->controller(BrandController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
+        Route::delete('/images/{id}', 'deleteImage');
+
     });
 
 
