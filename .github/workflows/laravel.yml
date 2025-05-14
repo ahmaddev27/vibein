@@ -5,7 +5,7 @@ on:
     branches: [ dev ]
   pull_request:
     branches: [ main ]
-    types: [closed]
+    types: [ closed ]
     paths-ignore:
       - 'README.md'
       - '.gitignore'
@@ -90,7 +90,7 @@ jobs:
             README.md
 
       - name: 📢 Notify Slack (Production Success)
-        if: success()
+        if: success() && contains(github.event.head_commit.message, 'slack')
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -105,8 +105,9 @@ jobs:
             • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
             • By: ${{ github.actor }}
 
-      - name: 📢 Notify Slack (Production Failure)
-        if: failure()
+
+      - name: 📢 Notify Slack (Dev Success)
+        if: success() && contains(github.event.head_commit.message, 'slack')
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -203,8 +204,9 @@ jobs:
             artisan
             README.md
 
-      - name: 📢 Notify Slack (Dev Success)
-        if: success()
+      - name: 📢 Notify Slack (Dev Failure)
+        if: failure() && contains(github.event.head_commit.message, 'slack')
+
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
