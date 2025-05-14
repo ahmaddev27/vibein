@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main ]
     types: [closed]
-
     paths-ignore:
       - 'README.md'
       - '.gitignore'
@@ -19,6 +18,7 @@ jobs:
     name: 🛡️ Production Deployment
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
       - name: 🛠️ Checkout repository
         uses: actions/checkout@v4
@@ -88,6 +88,38 @@ jobs:
             phpunit.xml
             artisan
             README.md
+
+      - name: 📢 Notify Slack (Production Success)
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: 'Laravel Deployer 🚀'
+          SLACK_ICON_EMOJI: ':rocket:'
+          SLACK_COLOR: '#36a64f'
+          SLACK_TITLE: '✅ Production Deployed'
+          SLACK_MESSAGE: |
+            🎉 *Production Deployment Completed*
+            • Repo: ${{ github.repository }}
+            • Branch: ${{ github.ref }}
+            • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • By: ${{ github.actor }}
+
+      - name: 📢 Notify Slack (Production Failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: 'Laravel Deployer ❌'
+          SLACK_ICON_EMOJI: ':x:'
+          SLACK_COLOR: '#ff0000'
+          SLACK_TITLE: '❌ Production Deployment Failed'
+          SLACK_MESSAGE: |
+            🚨 *Production Deployment Failed*
+            • Repo: ${{ github.repository }}
+            • Branch: ${{ github.ref }}
+            • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • By: ${{ github.actor }}
 
       - name: ✅ Done
         run: |
@@ -171,39 +203,6 @@ jobs:
             artisan
             README.md
 
-      - name: 📢 Notify Slack
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_USERNAME: 'Laravel Deployer 🚀'
-          SLACK_ICON_EMOJI: ':rocket:'
-          SLACK_COLOR: '#36a64f'
-          SLACK_TITLE: '✅ Production Deployed'
-          SLACK_MESSAGE: |
-            🎉 *Production Deployment Completed*
-            • Repo: ${{ github.repository }}
-            • Branch: ${{ github.ref }}
-            • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
-            • By: ${{ github.actor }}
-
-
-
-      - name: 📢 Notify Slack (Failure)
-        if: failure()
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_USERNAME: 'Laravel Deployer ❌'
-          SLACK_ICON_EMOJI: ':x:'
-          SLACK_COLOR: '#ff0000'
-          SLACK_TITLE: '❌ Production Deployment Failed'
-          SLACK_MESSAGE: |
-            🚨 *Production Deployment Failed*
-            • Repo: ${{ github.repository }}
-            • Branch: ${{
-
-
-
       - name: 📢 Notify Slack (Dev Success)
         if: success()
         uses: rtCamp/action-slack-notify@v2
@@ -218,7 +217,6 @@ jobs:
             • Branch: ${{ github.ref }}
             • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
             • By: ${{ github.actor }}
-
 
       - name: 📢 Notify Slack (Dev Failure)
         if: failure()
