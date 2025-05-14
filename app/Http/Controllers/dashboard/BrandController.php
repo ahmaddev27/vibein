@@ -9,6 +9,8 @@ use App\Http\Resources\dashboard\BrandResource;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class BrandController extends Controller
 {
@@ -100,7 +102,7 @@ class BrandController extends Controller
         try {
             $brandData = [
                 'companyId' => $request->companyId,
-                'showStatus' => $request->showStatus,
+                'showStatus' => 1,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 
@@ -159,7 +161,7 @@ class BrandController extends Controller
         try {
             $brandData = [
                 'companyId' => $request->companyId,
-                'showStatus' => $request->showStatus,
+                'showStatus' => 1,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 
@@ -226,4 +228,52 @@ class BrandController extends Controller
 
 
     }
+
+
+    public function deleteImage($id)
+    {
+
+        try {
+            $brand = Brand::find($id);
+            if (!$brand) {
+                return $this->apiResponse(
+                    null,
+                    'Brand not found',
+                    false,
+                    404
+                );
+            }
+
+            // Delete the category image if it exists
+            if ($brand->image) {
+                Storage::disk('public')->delete($brand->image);
+                $brand->image = null;
+                $brand->save();
+            }
+
+            return $this->apiResponse(
+                null,
+                'Image deleted successfully',
+                true,
+                200
+            );
+
+
+        }catch (\Exception $e) {
+            Log::error('Image deletion error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id
+            ]);
+
+            return $this->apiResponse(
+                null,
+                'Error deleting image',
+                false,
+                500
+            );
+        }
+
+
+    }
+
 }

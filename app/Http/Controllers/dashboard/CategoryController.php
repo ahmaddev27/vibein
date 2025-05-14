@@ -82,7 +82,7 @@ class CategoryController extends Controller
         $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
             'companyId' => $request->companyId,
-            'showStatus' => $request->showStatus,
+            'showStatus' => 1,
             'sortOrder' => $request->sortOrder ?? 0,
         ];
 
@@ -155,7 +155,8 @@ class CategoryController extends Controller
             $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
                 'companyId' => $request->companyId,
-                'showStatus' => $request->showStatus,
+                'showStatus' => 1,
+
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
             // Handle image upload
@@ -234,6 +235,53 @@ class CategoryController extends Controller
 
 
     }
+
+    public function deleteImage($id)
+    {
+
+        try {
+            $category = Category::find($id);
+            if (!$category) {
+                return $this->apiResponse(
+                    null,
+                    'Category not found',
+                    false,
+                    404
+                );
+            }
+
+            // Delete the category image if it exists
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+                $category->image = null;
+                $category->save();
+            }
+
+            return $this->apiResponse(
+                null,
+                'Image deleted successfully',
+                true,
+                200
+            );
+
+
+        }catch (\Exception $e) {
+            Log::error('Image deletion error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id
+            ]);
+
+            return $this->apiResponse(
+                null,
+                'Error deleting image',
+                false,
+                500
+            );
+        }
+
+
+    }
+
 }
 
 
