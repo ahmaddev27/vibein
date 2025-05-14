@@ -334,6 +334,40 @@ class ProductController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+
+            foreach ($product->images as $image) {
+                if (Storage::disk('public')->exists($image->image)) {
+                    Storage::disk('public')->delete($image->image);
+                }
+            }
+
+            $product->delete();
+ 
+            return $this->apiResponse(
+                null,
+                'Product deleted successfully',
+                true,
+                200
+            );
+        } catch (\Exception $e) {
+            Log::error('Product deletion error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id
+            ]);
+
+            return $this->apiResponse(
+                null,
+                'Error deleting  Product deletion error: ' . $e->getMessage(),
+                false,
+                500
+            );
+        }
+    }
     public function deleteImage($imageId)
     {
         try {
