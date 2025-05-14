@@ -50,13 +50,13 @@ class Station extends Model
 
     public function packages(): BelongsToMany
     {
-        return $this->belongsToMany(Package::class, 'stationPackages', 'station_id', 'package_id');
+        return $this->belongsToMany(Package::class, 'stationpackages', 'station_id', 'package_id');
     }
 
 
     public function machines(): BelongsToMany
     {
-        return $this->belongsToMany(Machine::class, 'stationMachines', 'station_id', 'machine_id');
+        return $this->belongsToMany(Machine::class, 'stationmachines', 'station_id', 'machine_id');
     }
 
 }

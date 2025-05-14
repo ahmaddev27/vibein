@@ -125,7 +125,7 @@ class StationsController extends Controller
             DB::commit();
 
             return $this->apiResponse(
-                new StationResource($station),
+                new StationResource($station->load('categories','packages','machines')),
                 'Station created successfully',
                 true,
                 201
@@ -188,7 +188,8 @@ class StationsController extends Controller
             DB::commit();
 
             return $this->apiResponse(
-                new StationResource($station->load('categories')),
+                new StationResource($station->load('categories','packages','machines')),
+
                 'Station updated successfully',
                 true,
                 200
@@ -210,6 +211,7 @@ class StationsController extends Controller
         }
     }
 
+
     public function destroy($id)
     {
         $station = Station::find($id);
@@ -224,14 +226,15 @@ class StationsController extends Controller
 
         DB::beginTransaction();
         try {
+            // Delete category_station links
+            DB::table('category_station')->where('station_id', $station->id)->delete();
+
             // Delete associated images
             if ($station->images) {
                 foreach ($station->images as $image) {
-
                     if ($image->image) {
                         Storage::disk('public')->delete($image->image);
                     }
-
                     $image->delete();
                 }
             }
@@ -257,7 +260,6 @@ class StationsController extends Controller
                 500
             );
         }
-
     }
 
     public function deleteImage($id)
@@ -288,4 +290,39 @@ class StationsController extends Controller
     }
 
 
+    public function set(Request $request, $id)
+    {
+        $request->validate([
+            'packages' => 'required|array',
+            'packages.*' => 'required|exists:packages,id',
+            'machines' => 'required|array',
+            'machines.*' => 'required|exists:machines,id',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+
+            $station = Station::with('images')->findOrFail($id);
+            $station->packages()->sync($request->packages);
+            $station->machines()->sync($request->machines);
+            DB::commit();
+
+            return $this->apiResponse(
+                new StationResource($station->load('categories','packages','machines')),
+                'Station updated successfully',
+                true,
+                200
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->apiResponse(
+                null,
+                'Failed to update Station: ' . $e->getMessage(),
+                false,
+                500
+            );
+    }
+}
 }

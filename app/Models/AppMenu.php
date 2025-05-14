@@ -12,22 +12,22 @@ class AppMenu extends Model
 
 
     #WEHN GET ALL MENUS FOR CRM
-    protected static function booted()
-    {
-        static::addGlobalScope('appId', function (Builder $builder) {
-            $builder->where('appId', 3)->where('appGroupId', 12)->orderBy('order', 'asc')->where('deletedAt', null);
-        });
-    }
+//    protected static function booted()
+//    {
+//        static::addGlobalScope('appId', function (Builder $builder) {
+//            $builder->where('appId', 3)->where('appGroupId', 12)->orderBy('order', 'asc')->where('deletedAt', null);
+//        });
+//    }
 
 
     #WEHN GET ALL MENUS FOR VIBIN
 
-//    protected static function booted()
-//    {
-//        static::addGlobalScope('appId', function (Builder $builder) {
-//            $builder->where('appId', 3)->where('appGroupId',17)->orderBy('order', 'asc')->where('deletedAt',null);
-//        });
-//    }
+    protected static function booted()
+    {
+        static::addGlobalScope('appId', function (Builder $builder) {
+            $builder->where('appId', 3)->where('appGroupId',18)->orderBy('order', 'asc')->where('deletedAt',null);
+        });
+    }
 
     #WEHN GET ALL MENUS FOR APP
 
