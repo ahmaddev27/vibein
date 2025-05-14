@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\dashboard;
-
+//test on push
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
@@ -347,7 +347,7 @@ class ProductController extends Controller
             }
 
             $product->delete();
- 
+
             return $this->apiResponse(
                 null,
                 'Product deleted successfully',
