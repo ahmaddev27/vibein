@@ -69,6 +69,7 @@ Route::prefix('admin')->group(function () {
     Route::prefix('stations')->controller(StationsController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
         Route::delete('/images/{id}', 'deleteImage');
+        Route::post('/set/{id}', 'set');
     });
 
 

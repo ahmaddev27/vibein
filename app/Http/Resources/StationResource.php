@@ -33,9 +33,26 @@ class StationResource extends JsonResource
             'images' => $this->images->map(function ($image) {
                 return [
                     'id' => $image->id,
-                    'image' => url('storage/'.$image->image),
+                    'image' => url('storage/' . $image->image),
+                ];
+
+            }),
+
+            'packages' => $this->packages?->map(function ($package) {
+                return [
+                    'id' => $package->id,
+                    'name' => $package->name,
                 ];
             }),
+
+            'machines' => $this->machines?->map(function ($machine) {
+                return [
+                    'id' => $machine->id,
+                    'name' => $machine->name,
+                ];
+            }),
+
+            'cycle'=> $this->cycle,
         ];
     }
 }
