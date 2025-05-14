@@ -175,7 +175,7 @@ jobs:
       - name: 🚀 Deploy to Dev Server
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
-          server: ${{ secrets.DEV_FTP_HOST }}
+          server: ${{ secrets.DEV_FTP_HOSTu }}
           username: ${{ secrets.DEV_FTP_USERNAME }}
           password: ${{ secrets.DEV_FTP_PASSWORD }}
           port: 21
