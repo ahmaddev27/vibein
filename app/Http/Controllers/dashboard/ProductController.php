@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\dashboard;
+
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
@@ -28,7 +29,7 @@ class ProductController extends Controller
                 'categories.CategoryTranslations',
                 'productVariants',
                 'productTranslations',
-                'Brand:id',
+                'Brand',
                 'Brand.brandTranslation',
             ]);
 
@@ -56,11 +57,8 @@ class ProductController extends Controller
 
             $perPage = $request->input('per_page', 10);
 
-            // تحسين الأداء عبر التخزين المؤقت
-            $cacheKey = 'products_' . md5(json_encode($request->all()));
-            $products = Cache::remember($cacheKey, 60, function () use ($query, $perPage) {
-                return $query->paginate($perPage);
-            });
+
+                 $products=$query->paginate($perPage);
 
             if ($products->isEmpty()) {
                 return $this->apiRespose(null, 'No products found', true, 200);
@@ -152,18 +150,18 @@ class ProductController extends Controller
 
             }
 
-
-            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
-
-                // Attach Categories
-                foreach ($request->sub_category_id as $scategoryId) {
-                    ProductCategories::create([
-                        'productId' => $product->id,
-                        'categoryId' => $scategoryId,
-                        'subCategory' => true
-                    ]);
-                }
-            }
+//
+//            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
+//
+//                // Attach Categories
+//                foreach ($request->sub_category_id as $scategoryId) {
+//                    ProductCategories::create([
+//                        'productId' => $product->id,
+//                        'categoryId' => $scategoryId,
+//                        'subCategory' => true
+//                    ]);
+//                }
+//            }
 
 
             return $this->apiResponse(
@@ -297,15 +295,15 @@ class ProductController extends Controller
                 }
             }
 
-            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
-                foreach ($request->sub_category_id as $scategoryId) {
-                    ProductCategories::create([
-                        'productId' => $product->id,
-                        'categoryId' => $scategoryId,
-                        'subCategory' => true
-                    ]);
-                }
-            }
+//            if ($request->has('sub_category_id') && count($request->sub_category_id) > 0) {
+//                foreach ($request->sub_category_id as $scategoryId) {
+//                    ProductCategories::create([
+//                        'productId' => $product->id,
+//                        'categoryId' => $scategoryId,
+//                        'subCategory' => true
+//                    ]);
+//                }
+//            }
 
             DB::commit();
             return $this->apiResponse(
@@ -336,8 +334,28 @@ class ProductController extends Controller
     public function destroy($id)
     {
         try {
-            $product = Product::findOrFail($id);
+            $product = Product::findl($id);
 
+            if (!$product) {
+                return $this->apiResponse(
+                    null,
+                    'Product not found',
+                    false,
+                    404
+                );
+            }
+
+            $isInPackage = DB::table('package_products')->where('product_id', $id)->exists();
+            $isAlternative = DB::table('package_product_alternatives')->where('product_id', $id)->exists();
+
+            if ($isInPackage || $isAlternative) {
+                return $this->apiResponse(
+                    null,
+                    'Product cannot be deleted as it is part of a package product or an alternative.',
+                    false,
+                    400
+                );
+            }
 
             foreach ($product->images as $image) {
                 if (Storage::disk('public')->exists($image->image)) {
@@ -367,6 +385,7 @@ class ProductController extends Controller
             );
         }
     }
+
     public function deleteImage($imageId)
     {
         try {
@@ -400,6 +419,7 @@ class ProductController extends Controller
             );
         }
     }
+
 
 }
 
