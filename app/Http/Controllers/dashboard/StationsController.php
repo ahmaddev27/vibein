@@ -29,7 +29,7 @@ class StationsController extends Controller
             if ($request->has('search')) {
                 $search = $request->search;
                 $search_by = $request->get('search_by', 'name');
-                $query->where($search_by, 'like', "%{$search}%");
+                $query->where($search_by, 'ilike', "%{$search}%");
             }
 
             // Apply sorting

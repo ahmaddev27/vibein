@@ -29,7 +29,7 @@ class MachineController extends Controller
             $search = $request->search;
             $search_by = $request->get('search_by', 'name');
             $machines->where(function ($query) use ($search, $search_by) {
-                $query->where($search_by, 'like', "%{$search}%");
+                $query->where($search_by, 'ilike', "%{$search}%");
             });
         }
 

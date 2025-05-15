@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\ProductCategories;
 use App\Models\ProductImages;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -41,7 +40,7 @@ class ProductController extends Controller
                 $search = $request->search;
                 $search_by = $request->get('search_by', 'name');
                 $query->whereHas('productTranslations', function ($q) use ($search, $search_by) {
-                    $q->where($search_by, 'like', "%{$search}%");
+                    $q->where($search_by, 'ilike', "%{$search}%");
                 });
             }
 
@@ -334,7 +333,7 @@ class ProductController extends Controller
     public function destroy($id)
     {
         try {
-            $product = Product::findl($id);
+            $product = Product::find($id);
 
             if (!$product) {
                 return $this->apiResponse(
