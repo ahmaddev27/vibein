@@ -107,8 +107,8 @@ jobs:
             • By: ${{ github.actor }}
 
 
-      - name: 📢 Notify Slack (Dev Success)
-        if: success() && contains(github.event.head_commit.message, 'slack')
+      - name: 📢 Notify Slack (Production Failure)
+        if: failure() && contains(github.event.head_commit.message, 'slack')
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -206,8 +206,8 @@ jobs:
             artisan
             README.md
 
-      - name: 📢 Notify Slack (Dev Failure)
-        if: failure() && contains(github.event.head_commit.message, 'slack')
+      - name: 📢 Notify Slack (Dev Success)
+        if: success() && contains(github.event.head_commit.message, 'slack')
 
         uses: rtCamp/action-slack-notify@v2
         env:
@@ -224,7 +224,8 @@ jobs:
             • By: ${{ github.actor }}
 
       - name: 📢 Notify Slack (Dev Failure)
-        if: failure()
+
+        if: failure() && contains(github.event.head_commit.message, 'slack')
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
