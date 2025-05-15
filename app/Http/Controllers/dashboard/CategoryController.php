@@ -81,7 +81,6 @@ class CategoryController extends Controller
         // Prepare category data
         $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-            'companyId' => $request->companyId,
             'showStatus' => 1,
             'sortOrder' => $request->sortOrder ?? 0,
         ];
@@ -154,7 +153,6 @@ class CategoryController extends Controller
             // Prepare category data
             $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-                'companyId' => $request->companyId,
                 'showStatus' => 1,
 
                 'sortOrder' => $request->sortOrder ?? 0,
@@ -208,7 +206,13 @@ class CategoryController extends Controller
     public function destroy($id)
     {
 
+
         $category = Category::find($id);
+        $hasProduct = DB::table('productCategories')
+            ->where('categoryId', $id)
+            ->exists();
+
+
         if (!$category) {
             return $this->apiResponse(
                 null,
@@ -217,6 +221,17 @@ class CategoryController extends Controller
                 404
             );
         }
+
+        if ($hasProduct) {
+            return $this->apiResponse(
+                null,
+                'Category cannot be deleted because it is associated with products',
+                false,
+                400
+            );
+        }
+
+
 
         // Delete the category image if it exists
         if ($category->image) {
@@ -265,7 +280,7 @@ class CategoryController extends Controller
             );
 
 
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Image deletion error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'id' => $id

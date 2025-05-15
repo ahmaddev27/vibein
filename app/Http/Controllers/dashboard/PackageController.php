@@ -224,12 +224,25 @@ class PackageController extends Controller
             );
         }
 
+
+        $hasStations = DB::table('stationpackages')->where('package_id', $id)->exists();
+        if ($hasStations) {
+            return $this->apiRespose(
+                null,
+                'Package cannot be deleted because it is associated with stations',
+                false,
+                400
+            );
+        }
+
+
         foreach ($package->products as $product) {
             foreach ($product->alternatives as $alternative) {
                 $alternative->delete();
             }
             $product->delete();
         }
+
 
         // Delete package images
         foreach ($package->images as $image) {

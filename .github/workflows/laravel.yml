@@ -103,6 +103,7 @@ jobs:
             • Repo: ${{ github.repository }}
             • Branch: ${{ github.ref }}
             • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • Message: ${{ github.event.head_commit.message }}
             • By: ${{ github.actor }}
 
 
@@ -119,7 +120,8 @@ jobs:
             🚨 *Production Deployment Failed*
             • Repo: ${{ github.repository }}
             • Branch: ${{ github.ref }}
-            • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\
+            • Message: ${{ github.event.head_commit.message }}
             • By: ${{ github.actor }}
 
       - name: ✅ Done
@@ -218,6 +220,7 @@ jobs:
             🧪 *Development Deployment Completed*
             • Branch: ${{ github.ref }}
             • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • Message: ${{ github.event.head_commit.message }}
             • By: ${{ github.actor }}
 
       - name: 📢 Notify Slack (Dev Failure)
@@ -233,6 +236,7 @@ jobs:
             🚨 *Development Deployment Failed*
             • Branch: ${{ github.ref }}
             • Commit: <https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>
+            • Message: ${{ github.event.head_commit.message }}
             • By: ${{ github.actor }}
 
       - name: ✅ Done

@@ -57,7 +57,7 @@ class BrandController extends Controller
             }
 
             return $this->ApiResponsePaginationTrait(
-               BrandResource::collection( $brands),
+                BrandResource::collection($brands),
                 'Brands retrieved successfully',
                 true,
                 200
@@ -101,7 +101,6 @@ class BrandController extends Controller
 
         try {
             $brandData = [
-                'companyId' => $request->companyId,
                 'showStatus' => 1,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
@@ -160,7 +159,6 @@ class BrandController extends Controller
         DB::beginTransaction();
         try {
             $brandData = [
-                'companyId' => $request->companyId,
                 'showStatus' => 1,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
@@ -207,6 +205,7 @@ class BrandController extends Controller
     {
 
         $brand = Brand::find($id);
+
         if (!$brand) {
             return $this->apiResponse(
                 null,
@@ -215,6 +214,18 @@ class BrandController extends Controller
                 404
             );
         }
+
+        $hasProducts = DB::table('product')->where('brandId', $id)->exists();
+
+        if ($hasProducts) {
+            return $this->apiResponse(
+                null,
+                'Brand cannot be deleted because it is associated with products',
+                false,
+                400
+            );
+        }
+
 
         // Delete the brand
         $brand->delete();
@@ -259,7 +270,7 @@ class BrandController extends Controller
             );
 
 
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Image deletion error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'id' => $id

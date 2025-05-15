@@ -35,7 +35,7 @@ class StoreProductRequest extends FormRequest
 
             // Categories
             'category_id' => 'required|array|min:1',
-//            'category_id.*' => 'exists:categories,id',
+            'category_id.*' => 'exists:category,id',
 //            'images'=> 'nullable|array|min:1',
             // Pieces
             'prices' => 'nullable|array|min:1',

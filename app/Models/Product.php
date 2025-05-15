@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Builder;
@@ -89,7 +90,7 @@ class Product extends Model
     }
 
 
-    public function Brand()
+    public function Brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class, 'brandId', 'id');
     }

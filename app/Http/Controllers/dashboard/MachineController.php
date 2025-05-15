@@ -199,6 +199,19 @@ class MachineController extends Controller
             );
         }
 
+        $inStations=DB::table('stationmachines')
+                ->where('machine_id', $id)
+                ->exists();
+
+        if ($inStations) {
+            return $this->apiResponse(
+                null,
+                'Machine cannot be deleted because it is associated with stations',
+                false,
+                400
+            );
+        }
+
         if ($machine->images) {
             foreach ($machine->images as $image) {
 
