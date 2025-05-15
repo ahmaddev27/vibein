@@ -33,7 +33,7 @@ class BrandController extends Controller
                 $search_by = $request->get('search_by', 'name');
 
                 $query->whereHas('brandTranslation', function ($q) use ($search, $search_by) {
-                    $q->where($search_by, 'like', "%{$search}%");
+                    $q->where($search_by, 'ilike', "%{$search}%");
                 });
             }
 
