@@ -81,7 +81,7 @@ class CategoryController extends Controller
         // Prepare category data
         $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-            'showStatus' => 1,
+            'showStatus' => $request->showStatus ?? true,
             'sortOrder' => $request->sortOrder ?? 0,
         ];
 
@@ -153,7 +153,7 @@ class CategoryController extends Controller
             // Prepare category data
             $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-                'showStatus' => 1,
+                'showStatus' => $request->showStatus ?? true,
 
                 'sortOrder' => $request->sortOrder ?? 0,
             ];

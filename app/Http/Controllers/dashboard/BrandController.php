@@ -101,7 +101,7 @@ class BrandController extends Controller
 
         try {
             $brandData = [
-                'showStatus' => 1,
+                $request->showStatus ?? true,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 
@@ -159,7 +159,7 @@ class BrandController extends Controller
         DB::beginTransaction();
         try {
             $brandData = [
-                'showStatus' => 1,
+                'showStatus' => $request->showStatus ?? true,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 

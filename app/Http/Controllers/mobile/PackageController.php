@@ -4,10 +4,8 @@ namespace App\Http\Controllers\mobile;
 
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\mobile\ProductResource;
 use App\Http\Resources\PackageResource;
 use App\Models\Package;
-use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

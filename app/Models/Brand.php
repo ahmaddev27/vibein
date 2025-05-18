@@ -20,6 +20,11 @@ class Brand extends Model
     ];
 
 
+    protected $casts = [
+        'showStatus' => 'boolean',
+
+    ];
+
     protected static function booted()
     {
         static::addGlobalScope('company', function (Builder $builder) {
@@ -32,6 +37,7 @@ class Brand extends Model
             }
         });
     }
+
 
 
     // Custom timestamp column names
