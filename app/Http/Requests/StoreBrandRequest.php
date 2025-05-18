@@ -76,7 +76,7 @@ class StoreBrandRequest extends FormRequest
     public function prepareForValidation()
     {
         $this->merge([
-            'showStatus' => $this->showStatus ?? 1, // Default to 1 if not provided
+            'showStatus' => $this->showStatus ?? true, // Default to 1 if not provided
             'languageCode' => 'en', // Default to 'en' if not provided
         ]);
     }
