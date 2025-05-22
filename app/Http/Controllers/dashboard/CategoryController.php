@@ -185,7 +185,6 @@ class CategoryController extends Controller
 
             return $this->apiResponse(
                 new CategoryResource($category->load('CategoryTranslations')),
-
                 'Category updated successfully',
                 true,
                 200
