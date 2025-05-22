@@ -74,6 +74,7 @@ Route::prefix('admin')->group(function () {
     Route::apiResource('cycles', CycleController::class)->except(['update']);
     Route::prefix('cycles')->controller(CycleController::class)->group(function () {
         Route::post('/{id}', 'update');
+        Route::post('setStatus/{id}', 'setStatus');
         Route::post('/generate', 'generate');
     });
 

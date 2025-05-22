@@ -24,6 +24,26 @@ class PackageController extends Controller
             $perPage = $request->input('per_page', 10);
             $packages = $query->paginate($perPage);
 
+            // Apply search filter if provided
+
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+
+            if ($request->has('search')) {
+                $search = $request->search;
+                $search_by = $request->get('search_by', 'name');
+                $query->whereHas('brandTranslation', function ($q) use ($search, $search_by) {
+                    $q->where($search_by, 'ilike', "%{$search}%");
+                });
+            }
+
+            // Apply sorting
+            $sortField = $request->get('sort_by', 'created_at');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $query->orderBy($sortField, $sortDirection);
+
 
             if ($packages->isEmpty()) {
                 return $this->apiRespose(
@@ -100,6 +120,18 @@ class PackageController extends Controller
                 }
             }
 
+
+            if ($request->cycles) {
+                $cycles = [];
+                foreach ($request->cycles as $cycle) {
+                    $cycles[] = [
+                        'id' => $cycle['id'],
+                        'price' => $cycle['price'],
+                    ];
+                }
+                $package->cycles = $cycles;
+                $package->save();
+            }
 
             DB::commit();
 
@@ -215,6 +247,7 @@ class PackageController extends Controller
             ], 500);
         }
     }
+
 
 
     public function destroy($id)
