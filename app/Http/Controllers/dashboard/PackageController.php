@@ -160,8 +160,7 @@ class PackageController extends Controller
                 'tags' => $data['tags'] ?? null,
             ]);
 
-            // 3. حذف كل المنتجات والبدائل المرتبطة بالباكيج
-            // (يمكنك تحسين الأداء بعملية diff إذا رغبت)
+
             $package->products()->each(function ($pp) {
                 $pp->alternatives()->delete();
             });
@@ -189,6 +188,13 @@ class PackageController extends Controller
                             'add_on' => $alt['add_on'],
                         ]);
                     }
+                }
+            }
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('packages', 'public');
+                    $package->images()->create(['image' => $path]);
                 }
             }
 

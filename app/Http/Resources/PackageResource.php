@@ -18,8 +18,8 @@ class PackageResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'price' => $this->price,
-            'total' => $this->total + $this->price,
+            'price' => number_format( $this->price,2),
+            'total' => number_format($this->total + $this->price,2),
             'status' => $this->status,
             'tags' => $this->tags,
             'products' => $this->products->map(function ($packageProduct) {
@@ -39,7 +39,9 @@ class PackageResource extends JsonResource
                             'name' => optional($altProd->productTranslations->first())->name,
                             'image' => $altProd->images->first() ? url('storage/' . $altProd->images->first()->image) : null,
 
-                            'add_on' => $alt->add_on, // السعر الإضافي
+                            'add_on' => number_format($alt->add_on, 2),
+
+
                         ];
                     }),
                 ];

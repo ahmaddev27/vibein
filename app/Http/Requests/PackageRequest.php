@@ -13,7 +13,6 @@ class PackageRequest extends FormRequest
      */
     public function authorize()
     {
-        // ضبط الإذن حسب منطق التطبيق، أو اترك true للسماح للجميع
         return true;
     }
 

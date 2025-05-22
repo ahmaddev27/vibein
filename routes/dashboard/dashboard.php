@@ -8,6 +8,7 @@ use App\Http\Controllers\dashboard\MenuController;
 use App\Http\Controllers\dashboard\BrandController;
 use App\Http\Controllers\dashboard\PackageController;
 use App\Http\Controllers\dashboard\MachineController;
+use App\Http\Controllers\dashboard\CycleController;
 use App\Http\Controllers\dashboard\StationsController;
 use App\Http\Controllers\dashboard\Settings\App\SliderController;
 use App\Http\Controllers\dashboard\Settings\App\OnboardingController;
@@ -69,14 +70,20 @@ Route::prefix('admin')->group(function () {
         Route::delete('/images/{id}', 'deleteImage');
     });
 
+
+    Route::apiResource('cycles', CycleController::class)->except(['update']);
+    Route::prefix('cycles')->controller(CycleController::class)->group(function () {
+        Route::post('/{id}', 'update');
+        Route::post('/generate', 'generate');
+    });
+
+
     Route::apiResource('stations', StationsController::class)->except(['update']);
     Route::prefix('stations')->controller(StationsController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
         Route::delete('/images/{id}', 'deleteImage');
         Route::post('/set/{id}', 'set');
     });
-
-
 
 
     Route::apiResource('sliders', SliderController::class)->except(['update']);
