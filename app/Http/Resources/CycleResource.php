@@ -17,6 +17,9 @@ class CycleResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->name,
+            'status' => $this->status,
+
             'week_days' => $this->week_days,
             'delivers_times' => $this->delivers_times,
 

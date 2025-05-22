@@ -15,10 +15,42 @@ class CycleController extends Controller
     use ApiResponseTrait;
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $cycles = Cycle::all();
-        return $this->apiResponse(
+
+        $query = Cycle::query();
+
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+
+        // Apply sorting
+        $sortField = $request->get('sort_by', 'created_at');
+        $sortDirection = $request->get('sort_dir', 'desc');
+        $query->orderBy($sortField, $sortDirection);
+
+
+        $perPage = $request->input('per_page', 10);
+        $cycles = $query->paginate($perPage);
+
+
+        if ($cycles->isEmpty()) {
+            return $this->apiResponse(
+                null,
+                'No Cycles found',
+                true,
+                200
+            );
+        }
+
+        return $this->ApiResponsePaginationTrait(
             CycleResource::collection($cycles),
             'Cycles retrieved successfully',
             true,
@@ -31,8 +63,10 @@ class CycleController extends Controller
     {
 
         $created = Cycle::create([
+            'status'=>0,
             'week_days' => $request->week_days,
             'delivers_times' => $request->delivers_times,
+            'name' =>  count($request->week_days) . ' Day' . (count($request->week_days) > 1 ? 's' : '') . ' per Week',
         ]);
 
         return $this->apiResponse(
@@ -67,6 +101,30 @@ class CycleController extends Controller
 
     }
 
+    public function setStatus($id)
+    {
+        $cycle = Cycle::find($id);
+
+        if (!$cycle) {
+            return $this->apiRespose(
+                null,
+                'Cycle not found',
+                false,
+                404
+            );
+        }
+
+        Cycle::where('id', '!=', $cycle->id)->update(['status' => false]);
+        $cycle->status = true;
+        $cycle->save();
+
+        return $this->apiRespose(
+            new CycleResource($cycle),
+            'Cycle status updated successfully',
+            true,
+            200
+        );
+    }
 
     public function update(StoreCycleRequest $request, $id)
     {
@@ -81,8 +139,11 @@ class CycleController extends Controller
         }
 
         $cycle->update([
+            'status'=>0,
             'week_days' => $request->week_days,
             'delivers_times' => $request->delivers_times,
+            'name' =>  count($request->week_days) . ' Day' . (count($request->week_days) > 1 ? 's' : '') . ' per Week',
+
         ]);
 
         return $this->apiResponse(
