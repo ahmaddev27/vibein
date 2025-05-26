@@ -30,7 +30,7 @@ class StoreBrandRequest extends FormRequest
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
 
             // Translation fields
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'metaTagTitle' => 'nullable|string|max:255',
             'metaTagDescription' => 'nullable|string',
@@ -76,7 +76,7 @@ class StoreBrandRequest extends FormRequest
     public function prepareForValidation()
     {
         $this->merge([
-            'showStatus' => $this->showStatus ?? true, // Default to 1 if not provided
+//            'showStatus' => $this->showStatus ?? true, // Default to 1 if not provided
             'languageCode' => 'en', // Default to 'en' if not provided
         ]);
     }

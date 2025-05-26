@@ -64,6 +64,12 @@ class Package extends Model
     }
 
 
+    public function cycles(): BelongsToMany
+    {
+        return $this->belongsToMany(Cycle::class, 'packages_cycles', 'package_id', 'cycle_id')
+            ->withPivot('price')
+            ->withTimestamps();
+    }
 
 
 }

@@ -16,14 +16,12 @@ class Brand extends Model
         'showStatus',
         'sortOrder',
         'updatedAt',
+        'description',
         'createdAt'
     ];
 
 
-    protected $casts = [
-        'showStatus' => 'boolean',
 
-    ];
 
     protected static function booted()
     {

@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PackageRequest;
 use App\Http\Resources\PackageResource;
+use App\Models\Cycle;
 use App\Models\Package;
 use App\Models\PackageImages;
 use Illuminate\Http\Request;
@@ -77,6 +78,29 @@ class PackageController extends Controller
         }
     }
 
+    public function getDeliveriesTime()
+    {
+        $deliveriesTime = null;
+        $cycle = Cycle::where('status', 1)->first();
+
+        if ($cycle && is_array($cycle->delivers_times)) {
+            $deliveriesTime = collect($cycle->delivers_times)->map(function ($item, $key) {
+                return [
+                    'id' => $key + 1,
+                    'count' => $item,
+                    'text' => $item . ' Deliveries in this month',
+                ];
+            })->values();
+        }
+
+
+        return $this->apiRespose(
+            $deliveriesTime,
+            'Deliveries Time retrieved successfully',
+            true,
+            200
+        );
+    }
 
     public function store(PackageRequest $request)
     {
@@ -89,9 +113,9 @@ class PackageController extends Controller
             $package = Package::create([
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
-                'price' => $data['price'],
+//                'price' => $data['price']??0,
                 'total' => $data['total'] ?? 0,
-                'status' => 'Active',
+                'status' => 1,
                 'tags' => $data['tags'] ?? null,
             ]);
 
@@ -103,34 +127,33 @@ class PackageController extends Controller
                 }
             }
 
-            // 3. إضافة كل منتج داخل الباكيج
+
             foreach ($data['products'] as $prod) {
                 $packageProduct = $package->products()->create([
                     'product_id' => $prod['product_id'],
                 ]);
 
-                // 4. إضافة البدائل (الإضافات) لهذا المنتج إن وجدت
+
                 if (!empty($prod['alternatives'])) {
                     foreach ($prod['alternatives'] as $alt) {
                         $packageProduct->alternatives()->create([
                             'product_id' => $alt['product_id'],
-                            'add_on' => $alt['add_on'], // السعر الإضافي
+                            'add_on' => $alt['add_on'] ?? 0,
                         ]);
                     }
                 }
             }
 
 
-            if ($request->cycles) {
-                $cycles = [];
-                foreach ($request->cycles as $cycle) {
-                    $cycles[] = [
-                        'id' => $cycle['id'],
-                        'price' => $cycle['price'],
-                    ];
+//            cycles here
+            if (isset($data['cycles']) && is_array($data['cycles'])) {
+                $syncData = [];
+                foreach ($data['cycles'] as $cycle) {
+                    $syncData[$cycle['id']] = ['price' => $cycle['price'] ?? 0];
                 }
-                $package->cycles = $cycles;
-                $package->save();
+                $package->cycles()->sync($syncData);
+            } else {
+                $package->cycles()->detach();
             }
 
             DB::commit();
@@ -178,17 +201,25 @@ class PackageController extends Controller
 
     public function update(PackageRequest $request, $id)
     {
+
         $data = $request->validated();
 
         DB::beginTransaction();
 
         try {
             // 2. تحميل الباكيج الموجود وتحديثه
-            $package = Package::findOrFail($id);
+            $package = Package::find($id);
+            if (!$package) {
+                return $this->apiRespose(
+                    null,
+                    'Package not found',
+                    false,
+                    404
+                );
+            }
             $package->update([
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
-                'price' => $data['price'],
                 'tags' => $data['tags'] ?? null,
             ]);
 
@@ -217,10 +248,21 @@ class PackageController extends Controller
                             'product_id' => $alt['product_id'],
                             'position' => $alt['position'] ?? null,
                             'is_selected' => $alt['is_selected'] ?? false,
-                            'add_on' => $alt['add_on'],
+                            'add_on' => $alt['add_on'] ?? null,
                         ]);
                     }
                 }
+            }
+
+
+            if (isset($data['cycles']) && is_array($data['cycles'])) {
+                $syncData = [];
+                foreach ($data['cycles'] as $cycle) {
+                    $syncData[$cycle['id']] = ['price' => $cycle['price'] ?? 0];
+                }
+                $package->cycles()->sync($syncData);
+            } else {
+                $package->cycles()->detach();
             }
 
             if ($request->hasFile('images')) {
@@ -247,7 +289,6 @@ class PackageController extends Controller
             ], 500);
         }
     }
-
 
 
     public function destroy($id)

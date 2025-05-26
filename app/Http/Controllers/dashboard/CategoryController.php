@@ -81,7 +81,8 @@ class CategoryController extends Controller
         // Prepare category data
         $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-            'showStatus' => $request->showStatus ?? true,
+            'showStatus'=>   $request->showStatus,
+
             'sortOrder' => $request->sortOrder ?? 0,
         ];
 
@@ -92,6 +93,7 @@ class CategoryController extends Controller
 
         // Create category
         $category = Category::create($categoryData);
+
 
         // Create translation
         $translationData = [
@@ -153,7 +155,8 @@ class CategoryController extends Controller
             // Prepare category data
             $categoryData = [
 //            'parentCategoryId' => $request->parentCategoryId,
-                'showStatus' => $request->showStatus ?? true,
+                'showStatus'=>   $request->showStatus,
+
 
                 'sortOrder' => $request->sortOrder ?? 0,
             ];

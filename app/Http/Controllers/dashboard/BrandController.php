@@ -87,7 +87,7 @@ class BrandController extends Controller
         }
 
         return $this->apiResponse(
-            $brand,
+            new BrandResource($brand),
             'Brand retrieved successfully',
             true,
             200
@@ -101,7 +101,7 @@ class BrandController extends Controller
 
         try {
             $brandData = [
-                $request->showStatus ?? true,
+                'showStatus' => $request->showStatus,
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 
@@ -156,10 +156,12 @@ class BrandController extends Controller
             );
         }
 
+
         DB::beginTransaction();
         try {
             $brandData = [
-                'showStatus' => $request->showStatus ?? true,
+                'showStatus' => $request->showStatus,
+
                 'sortOrder' => $request->sortOrder ?? 0,
             ];
 
@@ -170,13 +172,14 @@ class BrandController extends Controller
 
             $brand->update($brandData);
 
+            $brandTranslation = $brand->brandTranslation()->first();
             $brand->brandTranslation()->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'metaTagTitle' => $request->metaTagTitle,
-                'metaTagDescription' => $request->metaTagDescription,
-                'metaTagKeywords' => $request->metaTagKeywords,
-                'languageCode' => $request->languageCode,
+                'name' => $request->name ?? $brandTranslation->name,
+                'description' => $request->description ?? $brandTranslation->description,
+                'metaTagTitle' => $request->metaTagTitle ?? $brandTranslation->metaTagTitle,
+                'metaTagDescription' => $request->metaTagDescription ?? $brandTranslation->metaTagDescription,
+                'metaTagKeywords' => $request->metaTagKeywords ?? $brandTranslation->metaTagKeywords,
+                'languageCode' => $request->languageCode ?? $brandTranslation->languageCode,
             ]);
 
             DB::commit();

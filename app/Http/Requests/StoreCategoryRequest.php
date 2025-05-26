@@ -52,7 +52,6 @@ class StoreCategoryRequest extends FormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'showStatus' => $this->boolean('showStatus'),
             'languageCode' => 'en', // Default to 'en' if not provided
         ]);
     }
