@@ -63,11 +63,11 @@ class CycleController extends Controller
     {
 
         $created = Cycle::create([
-            'status'=>0,
-            'week_days' => $request->week_days,
-            'delivers_times' => $request->delivers_times,
-            'name' =>  count($request->week_days) . ' Day' . (count($request->week_days) > 1 ? 's' : '') . ' per Week',
+            'status' => $request->status,
+            'days' => json_encode($request->days),
+            'name' => count($request->days) . ' Day' . (count($request->days) > 1 ? 's' : '') . ' per Week',
         ]);
+
 
         return $this->apiResponse(
 
@@ -101,59 +101,35 @@ class CycleController extends Controller
 
     }
 
-    public function setStatus($id)
-    {
-        $cycle = Cycle::find($id);
 
-        if (!$cycle) {
-            return $this->apiRespose(
-                null,
-                'Cycle not found',
-                false,
-                404
-            );
-        }
+//    public function update(StoreCycleRequest $request, $id)
+//    {
+//        $cycle = Cycle::find($id);
+//        if (!$cycle) {
+//            return $this->apiResponse(
+//                null,
+//                'Cycle not found',
+//                false,
+//                404
+//            );
+//        }
+//
+//        $cycle->update([
+//            'status' => $request->status,
+//            'days' => json_encode($request->days),
+//            'name' => count($request->days) . ' Day' . (count($request->days) > 1 ? 's' : '') . ' per Week',
+//
+//        ]);
+//
+//        return $this->apiResponse(
+//            new CycleResource($cycle),
+//            'Cycle updated successfully',
+//            true,
+//            200
+//        );
+//
+//    }
 
-        Cycle::where('id', '!=', $cycle->id)->update(['status' => false]);
-        $cycle->status = true;
-        $cycle->save();
-
-        return $this->apiRespose(
-            new CycleResource($cycle),
-            'Cycle status updated successfully',
-            true,
-            200
-        );
-    }
-
-    public function update(StoreCycleRequest $request, $id)
-    {
-        $cycle = Cycle::find($id);
-        if (!$cycle) {
-            return $this->apiResponse(
-                null,
-                'Cycle not found',
-                false,
-                404
-            );
-        }
-
-        $cycle->update([
-            'status'=>0,
-            'week_days' => $request->week_days,
-            'delivers_times' => $request->delivers_times,
-            'name' =>  count($request->week_days) . ' Day' . (count($request->week_days) > 1 ? 's' : '') . ' per Week',
-
-        ]);
-
-        return $this->apiResponse(
-            new CycleResource($cycle),
-            'Cycle updated successfully',
-            true,
-            200
-        );
-
-    }
 
     public function destroy($id)
     {
@@ -166,6 +142,16 @@ class CycleController extends Controller
                 404
             );
         }
+
+        if ($cycle->packages()->count() > 0) {
+            return $this->apiResponse(
+                null,
+                'Cycle cannot be deleted because it is associated with one or more packages',
+                false,
+                400
+            );
+        }
+
         $cycle->delete();
         return $this->apiResponse(
             null,
@@ -174,75 +160,6 @@ class CycleController extends Controller
             200
         );
 
-    }
-
-
-    public function generate(Request $request)
-    {
-        $request->validate([
-            'week_days' => 'required|array',
-            'week_days.*' => 'in:Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday'
-        ]);
-
-        $selectedDays = $request->selected_days;
-        $options = $this->generateDeliveryOptions(count($selectedDays));
-
-        return $this->apiResponse(
-            [
-                'week_days' => $selectedDays,
-                'delivers_times' => $options
-            ],
-            'Delivery options generated successfully',
-            true,
-            200
-        );
-    }
-
-    protected function generateDeliveryOptions($selectedDaysCount)
-    {
-        $maxPerDay = 4; // الحد الأقصى لكل يوم في الشهر
-        $maxTotal = $selectedDaysCount * $maxPerDay;
-
-        // توليد الخيارات بناءً على عدد الأيام المختارة
-        $options = [];
-
-        if ($selectedDaysCount === 1) {
-            // يوم واحد: من 1 إلى 4 مرات
-            $options = range(1, $maxPerDay);
-        } elseif ($selectedDaysCount === 2) {
-            // يومين: من 2 إلى 8 مرات
-            $options = range(2, $maxTotal, 2);
-        } else {
-            // ثلاثة أيام: من 3 إلى 12 مرة
-            $options = range(3, $maxTotal, 3);
-        }
-
-        return $options;
-    }
-
-    protected function generateDeliveryPattern($selectedDays, $totalDeliveries)
-    {
-        $pattern = [];
-        $daysCount = count($selectedDays);
-
-        // التأكد من أن العدد المطلوب ضمن الحدود المقبولة
-        $maxPossible = $daysCount * 4;
-        $totalDeliveries = min($totalDeliveries, $maxPossible);
-
-        // توزيع العدد على الأيام بالتساوي قدر المستطاع
-        $baseDeliveries = floor($totalDeliveries / $daysCount);
-        $remaining = $totalDeliveries % $daysCount;
-
-        foreach ($selectedDays as $day) {
-            $count = $baseDeliveries;
-            if ($remaining > 0) {
-                $count++;
-                $remaining--;
-            }
-            $pattern[$day] = min($count, 4); // لا يتجاوز 4 مرات لكل يوم
-        }
-
-        return $pattern;
     }
 
 

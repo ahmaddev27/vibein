@@ -18,11 +18,9 @@ class CycleResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'status' => $this->status,
-
-            'week_days' => $this->week_days,
-            'delivers_times' => $this->delivers_times,
-
+            'status' => $this->status ? 1 : 0,
+            'days' => is_string($this->days) ? json_decode($this->days, true) : $this->days,
+            'days_count'=> count(is_string($this->days) ? json_decode($this->days, true) : $this->days),
         ];
     }
 }

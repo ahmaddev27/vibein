@@ -10,15 +10,13 @@ class Cycle extends Model
     protected $table = 'cycles';
 
     protected $fillable = [
-        'week_days',
+        'days',
         'name',
         'status',
-        'delivers_times',
     ];
 
     protected $cast = [
-        'week_days' => 'array',
-        'delivers_times' => 'array',
+        'days' => 'array',
         'status' => 'boolean',
     ];
 
@@ -39,5 +37,12 @@ class Cycle extends Model
         'week_days' => 'json',
         'delivers_times' => 'json',
     ];
+
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class, 'packages_cycles', 'cycle_id', 'package_id')
+            ->withPivot('price')
+            ->withTimestamps();
+    }
 
 }

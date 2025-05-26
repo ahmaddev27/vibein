@@ -61,6 +61,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/{id}', 'update')->name('update');
         Route::delete('/images/{id}', 'deleteImage');
         Route::post('/customize/{id}', 'customize');
+        Route::get('/get/DeliveriesTime', 'getDeliveriesTime');
     });
 
 
@@ -75,7 +76,7 @@ Route::prefix('admin')->group(function () {
     Route::prefix('cycles')->controller(CycleController::class)->group(function () {
         Route::post('/{id}', 'update');
         Route::post('setStatus/{id}', 'setStatus');
-        Route::post('/generate', 'generate');
+        Route::post('days/generate', 'generate');
     });
 
 

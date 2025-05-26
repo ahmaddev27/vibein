@@ -18,8 +18,8 @@ class PackageResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'price' => number_format( $this->price,2),
-            'total' => number_format($this->total + $this->price,2),
+            'price' => number_format($this->price, 2), // deleted need
+            'total' => number_format($this->total + $this->price, 2), // deleted need
             'status' => $this->status,
             'tags' => $this->tags,
             'products' => $this->products->map(function ($packageProduct) {
@@ -52,6 +52,17 @@ class PackageResource extends JsonResource
                     'url' => url('storage/' . $image->image),
                 ];
             }),
+
+
+            'cycles' => $this->cycles->map(function ($cycle) {
+                return [
+                    'cycle' => new CycleResource($cycle),
+                    'name' => $cycle->name,
+                    'price' => number_format($cycle->pivot->price, 2),
+                ];
+            }),
+
+
         ];
     }
 }

@@ -22,9 +22,8 @@ class StoreCycleRequest extends FormRequest
     public function rules()
     {
         return [
-            'week_days' => 'required|array|min:1',
-            'week_days*' => 'required|string|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
-            'delivers_times'=> 'required|array|min:1',
+            'days' => 'required|array|min:1',
+            'days*' => 'required|string|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
 
         ];
     }

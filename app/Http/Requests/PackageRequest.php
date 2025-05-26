@@ -26,7 +26,11 @@ class PackageRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
+//            'price' => 'required|numeric|min:0',
+
+            'cycles' => 'nullable|array',
+            'cycles.*.id' => 'required|exists:cycles,id',
+            'cycles.*.price' => 'required|numeric|min:0',
             'tags' => 'nullable|string',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:product,id',
@@ -34,7 +38,7 @@ class PackageRequest extends FormRequest
             'products.*.alternatives' => 'nullable|array',
             'products.*.alternatives.*.product_id' => 'required_with:products.*.alternatives|exists:product,id',
 
-            'products.*.alternatives.*.add_on' => 'required_with:products.*.alternatives|numeric|min:0',
+//            'products.*.alternatives.*.add_on' => 'nullable:products.*.alternatives|numeric|min:0',
         ];
     }
 
