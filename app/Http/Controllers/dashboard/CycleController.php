@@ -21,13 +21,15 @@ class CycleController extends Controller
         $query = Cycle::query();
 
 
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
+//        if ($request->status) {
+//            $query->where('status', $request->status);
+//        }
 
 
         if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $search_by = $request->get('search_by', 'days');
+            $query->where($search_by, 'ilike', "%{$search}%");
         }
 
 
@@ -63,7 +65,7 @@ class CycleController extends Controller
     {
 
         $created = Cycle::create([
-            'status' => $request->status,
+            'status' => 1,
             'days' => json_encode($request->days),
             'name' => count($request->days) . ' Day' . (count($request->days) > 1 ? 's' : '') . ' per Week',
         ]);
