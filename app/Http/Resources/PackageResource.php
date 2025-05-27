@@ -18,9 +18,9 @@ class PackageResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $this->description,
-            'price' => number_format($this->price, 2), // deleted need
-            'total' => number_format($this->total + $this->price, 2), // deleted need
-            'status' => $this->status,
+//            'price' => number_format($this->price, 2), // deleted need
+//            'total' => number_format($this->total + $this->price, 2), // deleted need
+            'status' => $this->status ? 1 : 0,
             'tags' => $this->tags,
             'products' => $this->products->map(function ($packageProduct) {
                 // المنتج الأساسي
@@ -55,13 +55,11 @@ class PackageResource extends JsonResource
 
 
             'cycles' => $this->cycles->map(function ($cycle) {
-                return [
-                    'cycle' => new CycleResource($cycle),
-                    'name' => $cycle->name,
-                    'price' => number_format($cycle->pivot->price, 2),
-                ];
+                return array_merge(
+                    (new CycleResource($cycle))->toArray(request()),
+                    ['price' => $cycle->pivot->price]
+                );
             }),
-
 
         ];
     }

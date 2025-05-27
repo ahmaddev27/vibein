@@ -34,7 +34,7 @@ class PackageController extends Controller
 
             if ($packages->isEmpty()) {
                 return $this->apiRespose(
-                    null,
+                    [],
                     'No Packages found',
                     true,
                     200

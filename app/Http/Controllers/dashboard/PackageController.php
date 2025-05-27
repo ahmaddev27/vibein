@@ -138,7 +138,7 @@ class PackageController extends Controller
                     foreach ($prod['alternatives'] as $alt) {
                         $packageProduct->alternatives()->create([
                             'product_id' => $alt['product_id'],
-                            'add_on' => $alt['add_on'] ?? 0,
+                            'add_on' => $alt['add_on'] ,
                         ]);
                     }
                 }
@@ -248,7 +248,7 @@ class PackageController extends Controller
                             'product_id' => $alt['product_id'],
                             'position' => $alt['position'] ?? null,
                             'is_selected' => $alt['is_selected'] ?? false,
-                            'add_on' => $alt['add_on'] ?? null,
+                            'add_on' => $alt['add_on'] ?? 0,
                         ]);
                     }
                 }
