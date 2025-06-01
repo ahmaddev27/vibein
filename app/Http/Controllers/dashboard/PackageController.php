@@ -23,7 +23,6 @@ class PackageController extends Controller
         try {
             $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
             $perPage = $request->input('per_page', 10);
-            $packages = $query->paginate($perPage);
 
             // Apply search filter if provided
 
@@ -32,18 +31,18 @@ class PackageController extends Controller
             }
 
 
-            if ($request->has('search')) {
+            if ($request->search) {
                 $search = $request->search;
                 $search_by = $request->get('search_by', 'name');
-                $query->whereHas('brandTranslation', function ($q) use ($search, $search_by) {
-                    $q->where($search_by, 'ilike', "%{$search}%");
-                });
+                $query->where($search_by, 'ilike', "%{$search}%");
             }
 
             // Apply sorting
             $sortField = $request->get('sort_by', 'created_at');
             $sortDirection = $request->get('sort_dir', 'desc');
             $query->orderBy($sortField, $sortDirection);
+
+            $packages = $query->paginate($perPage);
 
 
             if ($packages->isEmpty()) {
@@ -138,7 +137,7 @@ class PackageController extends Controller
                     foreach ($prod['alternatives'] as $alt) {
                         $packageProduct->alternatives()->create([
                             'product_id' => $alt['product_id'],
-                            'add_on' => $alt['add_on'] ,
+                            'add_on' => $alt['add_on'],
                         ]);
                     }
                 }
@@ -323,6 +322,9 @@ class PackageController extends Controller
             $product->delete();
         }
 
+        foreach ($package->cycles as $cycle) {
+            $package->cycles()->detach($cycle->id);
+        }
 
         // Delete package images
         foreach ($package->images as $image) {
