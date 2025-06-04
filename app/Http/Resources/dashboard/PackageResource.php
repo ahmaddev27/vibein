@@ -63,7 +63,7 @@ class PackageResource extends JsonResource
                     'price' => $this->one_time_price,
                 ];
                 return $cycles->push($oneTimeCycle);
-            }),
+            })->sortBy('id')->values()->all(),
 
         ];
     }
