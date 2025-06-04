@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\dashboard;
 
+use App\Http\Resources\CycleResource;
 use App\Http\Resources\mobile\ProductResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -39,11 +40,31 @@ class PackageResource extends JsonResource
                     'url' => url('storage/' . $image->image),
                 ];
             }),
+//            'cycles' => $this->cycles->map(function ($cycle) {
+//                return array_merge(
+//                    (new CycleResource($cycle))->toArray(request()),
+//                    ['price' => $cycle->pivot->price]
+//                );
+//            }),
+
             'cycles' => $this->cycles->map(function ($cycle) {
                 return array_merge(
                     (new CycleResource($cycle))->toArray(request()),
                     ['price' => $cycle->pivot->price]
                 );
+            })->when($this->one_time == 1, function ($cycles) {
+                // نضيف سايكل "one_time" مهجنة
+                $oneTimeCycle = [
+                    'id' => 0,
+                    'name' => 'one time',
+                    'status' => 1,
+                    'days' => [],
+                    'days_count' => 0,
+                    'price' => $this->one_time_price,
+                ];
+                return $cycles->push($oneTimeCycle);
             }),
+
         ];
-    }}
+    }
+}
