@@ -22,4 +22,5 @@ Route::get('/categories', function () {
 
 
 require __DIR__ . '/dashboard/dashboard.php';
+require __DIR__ . '/dashboard/vibein.php';
 require __DIR__ . '/mobile/mobile.php';
