@@ -73,7 +73,6 @@ class PackageResource extends JsonResource
             })->sortBy('id')->values()->all(),
 
 
-
         ];
     }
 }

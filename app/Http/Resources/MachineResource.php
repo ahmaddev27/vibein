@@ -20,7 +20,7 @@ class MachineResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'status' => $this->status,
-            'size' => $this->size,
+//            'size' => $this->size,
             'meta_title' => $this->meta_title,
             'category' => $this->category ? $this->category->CategoryTranslations->first()->name : null,
 

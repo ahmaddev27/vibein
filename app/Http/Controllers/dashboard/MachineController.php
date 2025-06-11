@@ -38,7 +38,7 @@ class MachineController extends Controller
         }
 
         // Apply sorting
-        $sortField = $request->get('sort_by', 'createdAt');
+        $sortField = $request->get('sort_by', 'created_at');
         $sortDirection = $request->get('sort_dir', 'desc');
         $machines->orderBy($sortField, $sortDirection);
 
@@ -76,7 +76,7 @@ class MachineController extends Controller
                 'name' => $request->name,
                 'description' => $request->description,
                 'status' => $request->status,
-                'size' => $request->size,
+//                'size' => $request->size,
                 'meta_title' => $request->meta_title,
                 'category_id' => $request->category_id,
             ]);
@@ -131,7 +131,7 @@ class MachineController extends Controller
                 'name' => $request->name,
                 'description' => $request->description,
                 'status' => $request->status,
-                'size' => $request->size,
+//                'size' => $request->size,
                 'meta_title' => $request->meta_title,
                 'category_id' => $request->category_id,
             ]);
