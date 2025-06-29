@@ -20,7 +20,7 @@ class MachineController extends Controller
     public function index(Request $request)
     {
 
-        $machines = Machine::with('images', 'category');
+        $machines = Machine::with('images');
         if ($request->has('status')) {
             $machines->where('status', $request->status);
         }
@@ -33,9 +33,9 @@ class MachineController extends Controller
             });
         }
 
-        if ($request->has('category_id')) {
-            $machines->where('category_id', $request->category_id);
-        }
+//        if ($request->has('category_id')) {
+//            $machines->where('category_id', $request->category_id);
+//        }
 
         // Apply sorting
         $sortField = $request->get('sort_by', 'created_at');
@@ -78,7 +78,7 @@ class MachineController extends Controller
                 'status' => $request->status,
 //                'size' => $request->size,
                 'meta_title' => $request->meta_title,
-                'category_id' => $request->category_id,
+//                'category_id' => $request->category_id,
             ]);
 
             if ($request->hasFile('images')) {
@@ -133,7 +133,7 @@ class MachineController extends Controller
                 'status' => $request->status,
 //                'size' => $request->size,
                 'meta_title' => $request->meta_title,
-                'category_id' => $request->category_id,
+//                'category_id' => $request->category_id,
             ]);
 
             if ($request->hasFile('images')) {

@@ -29,7 +29,7 @@ class MachineRequest extends FormRequest
             'status' => 'nullable|string|in:Active,Inactive',
 //            'size' => 'required|string|max:255',
             'meta_title' => 'nullable|string|max:255',
-            'category_id' => 'required|exists:category,id',
+//            'category_id' => 'required|exists:category,id',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
     }

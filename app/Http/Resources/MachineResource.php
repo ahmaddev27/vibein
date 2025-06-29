@@ -23,10 +23,10 @@ class MachineResource extends JsonResource
             'status' => $this->status,
 //            'size' => $this->size,
             'meta_title' => $this->meta_title,
-            'category' => $this->category ? [
-                'id' => $this->category->id,
-                'name' => optional($this->category->CategoryTranslations->first())->name,
-            ] : null,
+//            'category' => $this->category ? [
+//                'id' => $this->category->id,
+//                'name' => optional($this->category->CategoryTranslations->first())->name,
+//            ] : null,
 
 
             'images' => $this->images->map(function ($image) {
