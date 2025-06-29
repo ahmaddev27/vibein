@@ -3,7 +3,6 @@
 namespace App\Http\Resources\dashboard;
 
 use App\Http\Resources\CycleResource;
-use App\Http\Resources\mobile\ProductResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,7 +26,7 @@ class PackageResource extends JsonResource
                 $prod = $packageProduct->product;
 
                 return [
-                    'product' => new ProductResource($prod), // تم تعديل هذا السطر
+                    'product' => new ProductResource($prod),
                     'alternatives' => $packageProduct->alternatives->map(function ($alt) {
                         $altProd = $alt->addOnProduct; // علاقة belongsTo(Product::class, 'product_id')
                         return new ProductResource($altProd, $alt->add_on);
