@@ -34,11 +34,17 @@ class ProductController extends Controller
                 });
             }
 
-            if ($request->has('category_id')) {
-                $query->whereHas('categories', function ($q) use ($request) {
-                    $q->whereIn('category.id', $request->input('category_id'));
+
+
+            if ($request->filled('categories')) {
+                $categoryIds = explode(',', $request->input('categories'));
+
+                $query->whereHas('categories', function ($q) use ($categoryIds) {
+                    $q->whereIn('category.id', $categoryIds);
                 });
             }
+
+
 
 
             $perPage = $request->input('per_page', 10);

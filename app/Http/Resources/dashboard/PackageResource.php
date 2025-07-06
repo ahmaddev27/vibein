@@ -21,6 +21,8 @@ class PackageResource extends JsonResource
             'description' => $this->description,
             'status' => $this->status ? 1 : 0,
             'tags' => $this->tags,
+            'one_time'=>$this->one_time,
+            'one_time_price'=>$this->one_time_price,
             'products' => $this->products->map(function ($packageProduct) {
                 // المنتج الأساسي
                 $prod = $packageProduct->product;
@@ -51,18 +53,7 @@ class PackageResource extends JsonResource
                     (new CycleResource($cycle))->toArray(request()),
                     ['price' => $cycle->pivot->price]
                 );
-            })->when($this->one_time == 1, function ($cycles) {
-                // نضيف سايكل "one_time" مهجنة
-                $oneTimeCycle = [
-                    'id' => 0,
-                    'name' => 'one time',
-                    'status' => 1,
-                    'days' => [],
-                    'days_count' => 0,
-                    'price' => $this->one_time_price,
-                ];
-                return $cycles->push($oneTimeCycle);
-            })->sortBy('id')->values()->all(),
+            })
 
         ];
     }

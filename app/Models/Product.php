@@ -166,6 +166,14 @@ class Product extends Model
     }
 
 
+    public function quickPicks()
+    {
+        return $this->belongsToMany(QuickPick::class, 'product_quick_pick')
+            ->withPivot('count')
+            ->withTimestamps();
+    }
+
+
     public function tax()
     {
         return $this->hasOne(Tax::class, 'id', 'taxId');

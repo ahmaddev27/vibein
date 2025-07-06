@@ -104,34 +104,6 @@ class CycleController extends Controller
     }
 
 
-//    public function update(StoreCycleRequest $request, $id)
-//    {
-//        $cycle = Cycle::find($id);
-//        if (!$cycle) {
-//            return $this->apiResponse(
-//                null,
-//                'Cycle not found',
-//                false,
-//                404
-//            );
-//        }
-//
-//        $cycle->update([
-//            'status' => $request->status,
-//            'days' => json_encode($request->days),
-//            'name' => count($request->days) . ' Day' . (count($request->days) > 1 ? 's' : '') . ' per Week',
-//
-//        ]);
-//
-//        return $this->apiResponse(
-//            new CycleResource($cycle),
-//            'Cycle updated successfully',
-//            true,
-//            200
-//        );
-//
-//    }
-
 
     public function destroy($id)
     {

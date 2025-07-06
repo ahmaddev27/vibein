@@ -9,6 +9,7 @@ use App\Http\Controllers\dashboard\BrandController;
 use App\Http\Controllers\dashboard\PackageController;
 use App\Http\Controllers\dashboard\MachineController;
 use App\Http\Controllers\dashboard\CycleController;
+use App\Http\Controllers\dashboard\QuickPickController;
 use App\Http\Controllers\dashboard\StationsController;
 use App\Http\Controllers\dashboard\Settings\App\SliderController;
 use App\Http\Controllers\dashboard\Settings\App\OnboardingController;
@@ -86,6 +87,15 @@ Route::prefix('admin')->group(function () {
         Route::delete('/images/{id}', 'deleteImage');
         Route::post('/set/{id}', 'set');
     });
+
+
+    Route::apiResource('quick-picks', QuickPickController::class)->except(['update']);
+    Route::prefix('quick-picks')->controller(QuickPickController::class)->group(function () {
+        Route::post('/{id}', 'update')->name('update');
+        Route::delete('/images/{id}', 'deleteImage');
+
+    });
+
 
 
     Route::apiResource('sliders', SliderController::class)->except(['update']);

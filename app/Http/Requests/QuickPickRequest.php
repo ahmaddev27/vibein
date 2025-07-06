@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class MachineRequest extends FormRequest
+class QuickPickRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,24 +24,26 @@ class MachineRequest extends FormRequest
     public function rules()
     {
         return [
-
             'name' => 'required|string|max:255',
-//            'description' => 'required|string',
-            'status' => 'nullable|string|in:Active,Inactive',
-//            'size' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'meta_title' => 'nullable|string|max:255',
-//            'category_id' => 'required|exists:category,id',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'meta_description' => 'nullable|string',
+            'products' => 'nullable|array',
+            'products.*.id' => 'required|exists:product,id',
+            'products.*.count' => 'required|integer|min:1'
         ];
     }
-
 
     public function attributes()
     {
         return [
+
             'meta_title' => 'meta title',
+            'meta_description' => 'meta description',
         ];
     }
+
 
     protected function failedValidation(Validator $validator)
     {
@@ -57,11 +59,5 @@ class MachineRequest extends FormRequest
         );
     }
 
-    public function prepareForValidation()
-    {
-        $this->merge([
-            'status' => 'Active',
-        ]);
-    }
 
 }
