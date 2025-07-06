@@ -153,7 +153,7 @@ class QuickPickController extends Controller
     {
         $cycle = QuickPick::find($id);
         if (!$cycle) {
-            return $this->apiResponse(  
+            return $this->apiResponse(   
                 null,
                 'Quick Pick not found',
                 false,
