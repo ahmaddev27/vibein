@@ -66,8 +66,11 @@ class QuickPickController extends Controller
     {
 
         $quickPick = QuickPick::create($request->only([
-            'name', 'title', 'description', 'meta_title', 'meta_description'
-        ]));
+                'name', 'title', 'description', 'meta_title', 'meta_description'
+            ]) + [
+                'features' => $request->features,
+            ]);
+
 
 
         if ($request->filled('products')) {
@@ -114,8 +117,10 @@ class QuickPickController extends Controller
             'title',
             'description',
             'meta_title',
-            'meta_description'
+            'meta_description',
+            'features'
         ]));
+
 
 
         if ($request->filled('products')) {

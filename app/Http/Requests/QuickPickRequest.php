@@ -34,7 +34,6 @@ class QuickPickRequest extends FormRequest
             'products.*.count' => 'required|integer|min:1',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
-
         ];
     }
 
