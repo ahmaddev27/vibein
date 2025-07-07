@@ -31,7 +31,10 @@ class QuickPickRequest extends FormRequest
             'meta_description' => 'nullable|string',
             'products' => 'nullable|array',
             'products.*.id' => 'required|exists:product,id',
-            'products.*.count' => 'required|integer|min:1'
+            'products.*.count' => 'required|integer|min:1',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+
+
         ];
     }
 

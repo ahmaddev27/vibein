@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class QuickPick extends Model
 {
     protected $table = 'quick_picks';
-    protected $fillable = ['name', 'title', 'description', 'meta_title', 'meta_description'];
+    protected $fillable = ['name', 'title', 'description', 'meta_title', 'meta_description','image'];
 
     public function products()
     {

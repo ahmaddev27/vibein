@@ -8,6 +8,7 @@ use App\Http\Requests\QuickPickRequest;
 use App\Http\Resources\dashboard\QuickPickResource;
 use App\Models\QuickPick;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 
 class QuickPickController extends Controller
@@ -77,6 +78,13 @@ class QuickPickController extends Controller
             $quickPick->products()->sync($syncData);
         }
 
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('quickPicks', 'public');
+            $quickPick->update([
+                'image' => $imagePath,
+            ]);
+        }
+
         return $this->apiResponse(
 
             new QuickPickResource($quickPick),
@@ -118,6 +126,18 @@ class QuickPickController extends Controller
             $quickPick->products()->sync($syncData);
         }
 
+        if ($request->hasFile('image')) {
+            if ($quickPick->image && Storage::disk('public')->exists($quickPick->image)) {
+                Storage::disk('public')->delete($quickPick->image);
+            }
+
+            $imagePath = $request->file('image')->store('quickPicks', 'public');
+
+            $quickPick->update([
+                'image' => $imagePath,
+            ]);
+        }
+
         return $this->apiResponse(
             new QuickPickResource($quickPick),
             'Quick Pick updated successfully',
@@ -153,7 +173,7 @@ class QuickPickController extends Controller
     {
         $cycle = QuickPick::find($id);
         if (!$cycle) {
-            return $this->apiResponse(   
+            return $this->apiResponse(
                 null,
                 'Quick Pick not found',
                 false,
