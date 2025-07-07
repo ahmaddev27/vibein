@@ -92,10 +92,10 @@ Route::prefix('admin')->group(function () {
     Route::apiResource('quick-picks', QuickPickController::class)->except(['update']);
     Route::prefix('quick-picks')->controller(QuickPickController::class)->group(function () {
         Route::post('/{id}', 'update')->name('update');
+        Route::delete('delete-image/{id}', 'deleteImage');
         Route::delete('/images/{id}', 'deleteImage');
 
     });
-
 
 
     Route::apiResource('sliders', SliderController::class)->except(['update']);

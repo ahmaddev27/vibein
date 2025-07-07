@@ -32,7 +32,7 @@ class QuickPickRequest extends FormRequest
             'products' => 'nullable|array',
             'products.*.id' => 'required|exists:product,id',
             'products.*.count' => 'required|integer|min:1',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
         ];
     }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\QuickPickRequest;
 use App\Http\Resources\dashboard\QuickPickResource;
 use App\Models\QuickPick;
+use App\Models\QuickPickImages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -72,7 +73,6 @@ class QuickPickController extends Controller
             ]);
 
 
-
         if ($request->filled('products')) {
             $syncData = collect($request->products)->mapWithKeys(function ($product) {
                 return [$product['id'] => ['count' => $product['count']]];
@@ -81,11 +81,13 @@ class QuickPickController extends Controller
             $quickPick->products()->sync($syncData);
         }
 
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('quickPicks', 'public');
-            $quickPick->update([
-                'image' => $imagePath,
-            ]);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('quickPicks', 'public');
+                $quickPick->images()->create([
+                    'image' => $path,
+                ]);
+            }
         }
 
         return $this->apiResponse(
@@ -122,7 +124,6 @@ class QuickPickController extends Controller
         ]));
 
 
-
         if ($request->filled('products')) {
             $syncData = collect($request->products)->mapWithKeys(function ($product) {
                 return [$product['id'] => ['count' => $product['count']]];
@@ -131,16 +132,15 @@ class QuickPickController extends Controller
             $quickPick->products()->sync($syncData);
         }
 
-        if ($request->hasFile('image')) {
-            if ($quickPick->image && Storage::disk('public')->exists($quickPick->image)) {
-                Storage::disk('public')->delete($quickPick->image);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('quickPicks/images', 'public');
+
+                $quickPick->images()->create([
+                    'image' => $path,
+                ]);
             }
 
-            $imagePath = $request->file('image')->store('quickPicks', 'public');
-
-            $quickPick->update([
-                'image' => $imagePath,
-            ]);
         }
 
         return $this->apiResponse(
@@ -152,7 +152,8 @@ class QuickPickController extends Controller
     }
 
 
-    public function show($id)
+    public
+    function show($id)
     {
         $cycle = QuickPick::find($id);
         if (!$cycle) {
@@ -195,6 +196,24 @@ class QuickPickController extends Controller
             200
         );
 
+    }
+
+
+    public function deleteImage($id)
+    {
+        $image = QuickPickImages::find($id);
+
+        if (!$image) {
+            return $this->apiResponse(null, 'Image Not Found ', false, 404);
+        }
+
+        if (Storage::disk('public')->exists($image->image)) {
+            Storage::disk('public')->delete($image->image);
+        }
+
+        $image->delete();
+
+        return $this->apiResponse(null, 'Image deleted successfully', true, 200);
     }
 
 

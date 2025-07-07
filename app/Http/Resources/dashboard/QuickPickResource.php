@@ -23,8 +23,13 @@ class QuickPickResource extends JsonResource
             'meta_description' => $this->meta_description,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'image' => $this->image ? url('storage') . '/' . $this->image : null,
-            'features'=>$this->features,
+            'images' => $this->images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'url' => url('storage/' . $image->image),
+                ];
+            }),
+            'features' => $this->features,
 
             'products' => $this->products->map(function ($product) {
                 return [
