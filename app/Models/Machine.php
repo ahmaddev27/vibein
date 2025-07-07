@@ -37,10 +37,10 @@ class Machine extends Model
         return $this->hasMany(MachineImages::class, 'machine_id');
     }
 
-    public function category()
-    {
-        return $this->belongsTo(Category::class, 'category_id');
-    }
+//    public function category()
+//    {
+//        return $this->belongsTo(Category::class, 'category_id');
+//    }
 
 
     public function station(): BelongsToMany

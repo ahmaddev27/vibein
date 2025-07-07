@@ -5,7 +5,7 @@ namespace App\Http\Controllers\dashboard;
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PackageRequest;
-use App\Http\Resources\PackageResource;
+use App\Http\Resources\dashboard\PackageResource;
 use App\Models\Cycle;
 use App\Models\Package;
 use App\Models\PackageImages;
@@ -21,9 +21,8 @@ class PackageController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
+            $query = Package::with(['products.product.productTranslations', 'images']);
             $perPage = $request->input('per_page', 10);
-            $packages = $query->paginate($perPage);
 
             // Apply search filter if provided
 
@@ -32,18 +31,18 @@ class PackageController extends Controller
             }
 
 
-            if ($request->has('search')) {
+            if ($request->search) {
                 $search = $request->search;
                 $search_by = $request->get('search_by', 'name');
-                $query->whereHas('brandTranslation', function ($q) use ($search, $search_by) {
-                    $q->where($search_by, 'ilike', "%{$search}%");
-                });
+                $query->where($search_by, 'ilike', "%{$search}%");
             }
 
             // Apply sorting
             $sortField = $request->get('sort_by', 'created_at');
             $sortDirection = $request->get('sort_dir', 'desc');
             $query->orderBy($sortField, $sortDirection);
+
+            $packages = $query->paginate($perPage);
 
 
             if ($packages->isEmpty()) {
@@ -78,29 +77,29 @@ class PackageController extends Controller
         }
     }
 
-    public function getDeliveriesTime()
-    {
-        $deliveriesTime = null;
-        $cycle = Cycle::where('status', 1)->first();
-
-        if ($cycle && is_array($cycle->delivers_times)) {
-            $deliveriesTime = collect($cycle->delivers_times)->map(function ($item, $key) {
-                return [
-                    'id' => $key + 1,
-                    'count' => $item,
-                    'text' => $item . ' Deliveries in this month',
-                ];
-            })->values();
-        }
-
-
-        return $this->apiRespose(
-            $deliveriesTime,
-            'Deliveries Time retrieved successfully',
-            true,
-            200
-        );
-    }
+//    public function getDeliveriesTime()
+//    {
+//        $deliveriesTime = null;
+//        $cycle = Cycle::where('status', 1)->first();
+//
+//        if ($cycle && is_array($cycle->delivers_times)) {
+//            $deliveriesTime = collect($cycle->delivers_times)->map(function ($item, $key) {
+//                return [
+//                    'id' => $key + 1,
+//                    'count' => $item,
+//                    'text' => $item . ' Deliveries in this month',
+//                ];
+//            })->values();
+//        }
+//
+//
+//        return $this->apiRespose(
+//            $deliveriesTime,
+//            'Deliveries Time retrieved successfully',
+//            true,
+//            200
+//        );
+//    }
 
     public function store(PackageRequest $request)
     {
@@ -116,7 +115,9 @@ class PackageController extends Controller
 //                'price' => $data['price']??0,
                 'total' => $data['total'] ?? 0,
                 'status' => 1,
-                'tags' => $data['tags'] ?? null,
+                'tags' => $request->tags ?? null,
+                'one_time' => $request->one_time ?? null,
+                'one_time_price' => $request->one_time_price ?? null,
             ]);
 
 
@@ -138,7 +139,7 @@ class PackageController extends Controller
                     foreach ($prod['alternatives'] as $alt) {
                         $packageProduct->alternatives()->create([
                             'product_id' => $alt['product_id'],
-                            'add_on' => $alt['add_on'] ,
+                            'add_on' => $alt['add_on'],
                         ]);
                     }
                 }
@@ -220,7 +221,10 @@ class PackageController extends Controller
             $package->update([
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
-                'tags' => $data['tags'] ?? null,
+                'tags' => $request->tags ?? null,
+                'one_time' => $data['one_time'] ?? null,
+                'one_time_price' => $data['one_time_price'] ?? null,
+
             ]);
 
 
@@ -323,6 +327,9 @@ class PackageController extends Controller
             $product->delete();
         }
 
+        foreach ($package->cycles as $cycle) {
+            $package->cycles()->detach($cycle->id);
+        }
 
         // Delete package images
         foreach ($package->images as $image) {

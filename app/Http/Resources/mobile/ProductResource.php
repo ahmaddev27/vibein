@@ -7,41 +7,51 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductResource extends JsonResource
 {
+
     /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
+    protected $add_on;
+
+    public function __construct($resource, $add_on = null)
+    {
+        parent::__construct($resource);
+        $this->add_on = $add_on;
+    }
+
+
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
-            'name' => $this?->productTranslations->first()->name,
-            'description' => $this?->productTranslations->first()->description,
-            'label' => $this->lable,
-
+            'name' => $this->productTranslations?->first()?->name,
+            'description' => $this->productTranslations?->first()?->description,
+            'label' => $this->label ?? null,
 
             'images' => $this->images?->map(function ($image) {
-                return
-                    url('storage/' . $image->image);
+                    return url('storage/' . $image->image);
+                }) ?? [],
 
-            }),
+            'category' => new CategoryResource($this->categories?->first()),
+            'brand' => new BrandResource($this->brand),
 
-
-            'category' => new CategoryResource($this->categories->first()),
-            'brand' => new BrandResource($this->Brand),
-
-
-            'prices' => collect($this->productVariants?->first()?->prices)->map(function ($variant) {
+            'prices' => collect($this->productVariants?->first()?->prices ?? [])->map(function ($variant) {
                 return [
-                    'id' => $variant['id'] ?? null,  // Mapping the weight
-                    'weight' => $variant['weight'],  // Mapping the weight
-                    'price' => $variant['price'],    // Mapping the price
-                    'quantity' => $variant['quantity'] ?? null,    // Mapping the quantity
+                    'id' => $variant['id'] ?? null,
+                    'weight' => $variant['weight'] ?? null,
+                    'price' => $variant['price'] ?? null,
+                    'quantity' => $variant['quantity'] ?? null,
                 ];
-            }) ?: [],  // إرجاع مصفوفة فارغة إذا لم تكن هناك أي أسعار
-
-
+            })->values()->all(),
         ];
+
+        if ($this->add_on) {
+            $data['add_on'] = $this->add_on;
+        }
+
+        return $data;
     }
+
 }

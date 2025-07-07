@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\mobile;
+namespace App\Http\Controllers\Vibein;
 
 use App\Http\Controllers\ApiResponseTrait;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\mobile\PackageResource;
+use App\Http\Resources\dashboard\PackageResource;
 use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,28 +13,36 @@ class PackageController extends Controller
 {
     use ApiResponseTrait;
 
-
     public function index(Request $request)
     {
         try {
-            $query = Package::with(['products.product.productTranslations', 'images'])->orderBy('id', 'desc');
+            $query = Package::with(['products.product.productTranslations', 'images'])->where('status', 1);
+            $perPage = $request->input('per_page', 10);
 
+            // Apply search filter if provided
 
-            if ($request->filled('search')) {
-                $searchTerm = '%' . $request->input('search') . '%';
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('name', 'like', $searchTerm)
-                        ->orWhere('description', 'like', $searchTerm);
-                });
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
             }
 
 
-            $perPage = $request->input('per_page', 10);
+            if ($request->search) {
+                $search = $request->search;
+                $search_by = $request->get('search_by', 'name');
+                $query->where($search_by, 'ilike', "%{$search}%");
+            }
+
+            // Apply sorting
+            $sortField = $request->get('sort_by', 'created_at');
+            $sortDirection = $request->get('sort_dir', 'desc');
+            $query->orderBy($sortField, $sortDirection);
+
             $packages = $query->paginate($perPage);
+
 
             if ($packages->isEmpty()) {
                 return $this->apiRespose(
-                    [],
+                    null,
                     'No Packages found',
                     true,
                     200
@@ -64,9 +72,9 @@ class PackageController extends Controller
         }
     }
 
+
     public function show($id)
     {
-
         $package = Package::with(['products.product.productTranslations', 'images'])->find($id);
 
         if (!$package) {
@@ -88,4 +96,3 @@ class PackageController extends Controller
 
 
 }
-

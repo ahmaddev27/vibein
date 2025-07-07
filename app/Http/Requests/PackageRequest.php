@@ -40,6 +40,9 @@ class PackageRequest extends FormRequest
             'products.*.alternatives.*.product_id' => 'required_with:products.*.alternatives|exists:product,id',
 
             'products.*.alternatives.*.add_on' => 'nullable:products.*.alternatives|numeric|min:0',
+
+            'one_time' => 'nullable|boolean',
+            'one_time_price' => 'required_if:one_time,1|numeric|min:0',
         ];
     }
 

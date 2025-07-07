@@ -22,9 +22,15 @@ class Package extends Model
         'total',
         'status',
         'tags',
+        'one_time_price',
+        'one_time'
 
     ];
 
+    protected $casts = [
+
+        'one_time' => 'boolean',
+    ];
 
     protected static function booted()
     {
